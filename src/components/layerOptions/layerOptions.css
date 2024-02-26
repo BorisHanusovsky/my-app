@@ -1,0 +1,91 @@
+.layerOptions{
+    padding: 10px;
+    background-color: #427D9D;
+    position: absolute;
+    display: grid;
+    top:0;
+    left: 0;
+    right: 0;
+    margin:  20% auto;
+    /*min-height: 400px;*/
+    min-width: 400px;
+    width : 30%;
+    user-select: none;
+}
+
+.layerOptionsRow{
+    display: grid;
+    grid-template-columns: 20% 60% 20% ;
+    width: 100%;
+    min-height: 50px;
+}
+
+#layerOptionsTitle{
+    grid-column: 1;
+    grid-row: 1;
+}
+
+#layerOptionsClose{
+    text-align: end;
+    grid-column: 3;
+}
+.textik{
+    display:block;
+    background-color: #DDF2FD;
+    border: none;
+}
+
+#layerOptionsLabel{
+    align-self: center;
+    grid-column: 1;
+}
+
+#layerCountSlider{
+    width: 95%;
+    display: block;
+    accent-color:  #DDF2FD;
+    grid-column:2;
+    height: 50%;
+}
+
+#layerCountTextbox{
+    height: 50%;
+    max-width: 100px;
+}
+
+.combobox{
+    width: 50%;
+    height: 50%;
+    background-color: #DDF2FD;
+}
+
+#kernelSize{
+    width: 20%;
+    height: 50%;
+    background-color: #DDF2FD;
+}
+#stride{
+    height: 50%;
+    max-width: 100px;
+    background-color: #DDF2FD;
+}
+
+.numberEditor{
+    width: 20%;
+    height: 50%;
+    background-color: #DDF2FD;
+}
+
+#okButton{
+    margin: 10px;
+    justify-self: center;
+    grid-column: 2;
+}
+
+#activationImage{
+    margin:0;
+    height: 70%;
+    max-width: 50%;
+}
+
+

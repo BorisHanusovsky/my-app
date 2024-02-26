@@ -1,38 +1,172 @@
-.App {
-  text-align: center;
+/*F2545B
+A93F55
+19323C
+F3F7F0
+8C5E58*/
+
+*{
+  padding: 0;
+  margin:0;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+html{
+  background-color: darkgray;
+}
+.App{
+  height: 100vh;
+  display: grid;
+  grid-template-rows: 8% 84% 8%;
+  grid-template-columns: 50% 5% 45% ;
+}
+nav{
+  background-color: #427D9D;
+  grid-column: 1/4;
+}
+.nav_left{
+  width: 50%;
+  /* display: flexbox; */
+}
+.nav_right{
+  width: 50%;
+  /* display: flexbox; */
+
+}
+#dataInput{
+  display: none;
+}
+button{
+  position: relative;
+  width: 100px;
+  border-radius: 5px;
+  background-color: #DDF2FD;
+  
+}
+.content{
+  background-color: #164863;
+  grid-row: 2/3;
+  grid-column: 1/4;
+  display: grid;
+  grid-template-columns: 49% 2% 49% ;
+}
+.model_panel{
+  grid-column: 1/2;
+  background-color: #19323C;
+  overflow-y: auto;
+  color: #DDF2FD;
+}
+.model_panel h2{
+  margin: 10px;
+}
+.layer{
+  margin: auto;
+  margin-bottom: 10px;
+  background-color: #9BBEC8;
+  width: 50%;
+  color: black;
+  height: 20%;
+  border-radius: 10px;
+  padding: 10px;
+}
+.layer:hover{
+  border: 3px solid white;
+  border-radius: 10px;
+}
+.right_panel{
+  grid-column: 3/4;
+  display: grid;
+  grid-template-rows: 49% 2% 49%;
+}
+.kernel_panel{
+  grid-row: 1/2;
+  background-color: #19323C;
+  overflow: hidden;
+  overflow-y: scroll;
+  max-height: 550px;
+  color: #DDF2FD;
+}
+.kernel_panel h2{
+  margin: 10px;
+}
+.kernel_panel h3{
+  margin: 10px;
+}
+img {
+  max-width: 30%;
+  height: auto;
+  margin: 10px;
+}
+.graph_panel{
+  grid-row: 3/4;
+  background-color: #19323C;
+  color: #DDF2FD;
+}
+.graph_panel h2{
+  margin: 10px;
+}
+footer{
+  background-color: #427D9D;
+  grid-row: 3/4;
+  grid-column: 1/4;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Modal Content/Box */
+#modal_content {
+  background-color: #427D9D;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 2px solid #fff;
+  width: 30%; /* Could be more or less, depending on screen size */
+  min-width: 300px;
+}
+#modal_layers{
+  width: 80%;
+  margin: auto;
+  
+}
+.layer_button{
+  position: static;
+  margin: 5px auto;
+  font-size: 20px;
+  width: 100%;
+}
+.layer_button:hover{
+  background-color: #F2545B;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 
-.App-link {
-  color: #61dafb;
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.dataImage{
+  height: 100px;
+}
+.dataImage:hover{
+  transform: scale(1.5);
 }

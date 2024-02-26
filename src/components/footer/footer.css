@@ -1,0 +1,18 @@
+#footer{
+    background-color: #427D9D;
+    grid-row: 3/4;
+    grid-column: 1/4;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.university{
+    font-size: larger;
+}
+
+#centered{
+    text-align: center;
+}
+

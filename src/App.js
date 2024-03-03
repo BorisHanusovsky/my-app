@@ -1,16 +1,20 @@
 // App.js
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import './model.js';
 import ModelPanel from './components/modelPanel.js';
 import Navbar from './components/navbar.js';
 import Footer from './components/footer/footer.js';
-import {createModel, add_model_layer, saveModel, compileModel,importModel} from './model.js'
+import {createModel, add_model_layer, saveModel, compileModel,importModel,getLayers} from './model.js'
 import * as tf from '@tensorflow/tfjs'
 
+
 function App() {
-  const [layerList, setLayerList] = useState([/*{type: 'Input', index: 0, shape : (32,32), batchShape: null}*/]);
+  let [layerList, setLayerList] = useState([]);
+  useEffect(() => {
+    console.log(`Layers in app : ${layerList}`);
+  });
   
   const onFilesSelected = (files) =>{
     displayImages(files)
@@ -21,31 +25,22 @@ function App() {
       createModel();
       for(var i = 0; i< layerList.length; i++)
         add_model_layer(layerList[i])
-      compileModel()
+      compileModel();
       saveModel();
     }
   }
 
-  const onImportButtonPressed = (files) =>{
+  const onImportButtonPressed = (files) => {
     console.log(files);
-    alert("kokot")
     importModel(files)
-
-  }
-
-  const onLayerListUpdate = (layers) => {
-    setLayerList(layers);
-    console.log(layers)
-  }
-
-  // function loadTensorFlow() {
-  //   const script = document.createElement("script");
-  //   script.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js";
-  //   script.onload = window.onTfLoaded;
-  //   document.head.appendChild(script);
-
-  // loadTensorFlow();
-
+      .then((layers) => {
+        console.log("Setting layerList state:", layers);
+        setLayerList([...layers]);
+      })
+      .catch((error) => {
+        console.error("Error importing model:", error);
+      });
+  };
 
   function displayImages(files) {
     let imageContainer = document.getElementById("imageContainer")
@@ -64,12 +59,11 @@ function App() {
     }
 }
 
-
   return (
     <div className="App">
       <Navbar onFilesSelected={onFilesSelected} onSaveButtonPressed={onSaveButtonPressed} onImportButtonPressed={onImportButtonPressed}/>
       <div className="content">
-        <ModelPanel layers = {layerList} onSaveButtonPressed={onSaveButtonPressed} onLayerListUpdate= {onLayerListUpdate}/>
+        <ModelPanel layers = {layerList} setLayerList ={setLayerList}/>
         <div className="right_panel">
           <div className="kernel_panel" id="imageContainer">
             <h2>Display panel</h2>

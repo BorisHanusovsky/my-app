@@ -22,7 +22,7 @@ return (
         <h4>num. of kernels: {layer.numOfKernels}</h4>
         <h4>kernel shape: {"(" + layer.kernelSize[0] + "," + layer.kernelSize[1] + ")"}</h4>
         <h4>padding : {layer.padding}</h4>
-        <h4>stride shape: {"(" + layer.stride[0] + "," + layer.stride[1] + ")"}</h4>
+        <h4>strides shape: {"(" + layer.strides[0] + "," + layer.strides[1] + ")"}</h4>
       </div>
     );
 }

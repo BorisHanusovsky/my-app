@@ -29,7 +29,6 @@ nav{
 .nav_right{
   width: 50%;
   /* display: flexbox; */
-
 }
 #dataInput{
   display: none;
@@ -70,6 +69,7 @@ button{
 .layer:hover{
   border: 3px solid white;
   border-radius: 10px;
+  cursor : pointer;
 }
 .right_panel{
   grid-column: 3/4;

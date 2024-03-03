@@ -1,24 +1,64 @@
-// model.js
 import { LayerType } from "./components/layers/layerEnum";
-//import * as tf from '@tensorflow/tfjs'
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/storage'
+import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup} from "firebase/auth";
+import { getStorage,ref,getDownloadURL,uploadBytes } from "firebase/storage";
 const tf = require('@tensorflow/tfjs');
-//const storage = require('@google-cloud/storage');
-//const {Storage} = require('@google-cloud/storage');
-// Load the binding
-//const tf = require('@tensorflow/tfjs');
 
-// Or if running with GPU:
-//const tf = require('@tensorflow/tfjs-node-gpu');
-//require('@tensorflow/tfjs-node');
-//import "@tensorflow/tfjs-node"
 let model;
+let layers;
+const app = firebase.initializeApp({
+    apiKey: "AIzaSyCUQIQ2L3LSV_5cPtSZ97pRWBzxdgvXWHY",
+    authDomain: "borisssfirebase.firebaseapp.com",
+    projectId: "borisssfirebase",
+    storageBucket: "borisssfirebase.appspot.com",
+    messagingSenderId: "468959726053",
+    appId: "1:468959726053:web:aa97f1f9484cbaedb1470c"
+  });
+
+const storage = getStorage(app);
+console.log(storage);
+
+
+export async function downloadModel() {
+    const storageRef = firebase.storage().ref();
+    var modelRef = storageRef.child('my-model.json');
+  
+    try {
+      // Get the download URL
+      const url = await modelRef.getDownloadURL();
+      console.log(url);
+  
+      // Assuming `model` is declared in the outer scope
+      model = await tf.loadLayersModel(url);
+      console.log(model)
+  
+      // Insert url into an <img> tag to "download"
+      // var img = document.getElementById('myimg');
+      // img.setAttribute('src', url);
+    } catch (error) {
+      // Handle errors
+      switch (error.code) {
+        case 'storage/object-not-found':
+          // File doesn't exist
+          break;
+        case 'storage/unauthorized':
+          // User doesn't have permission to access the object
+          break;
+        case 'storage/canceled':
+          // User canceled the upload
+          break;
+        case 'storage/unknown':
+          // Unknown error occurred, inspect the server response
+          break;
+        default:
+          // Handle other errors
+      }
+    }
+  }
 
 export function createModel() {
-    // Your model creation logic here
     model = tf.sequential();
-    
-    //model.add(tf.layers.input({shape : (32,32)}));
-    //console.log(model)
 }
 
 export function compileModel(){
@@ -26,58 +66,137 @@ export function compileModel(){
     model.compile({ optimizer: 'adam',loss: 'categoricalCrossentropy', metrics: ['accuracy']});
 }
 
-export function saveModel(){
-    model.save('downloads://my-model');
+const modelJsonRef = ref(storage, 'my-model.json');
+const modelWeightsRef = ref(storage, 'my-model.weights.bin');
+
+export async function saveModel() {
+//   // Save model architecture (JSON) to Firebase Storage
+//   const modelJsonBlob = new Blob([JSON.stringify(model.toJSON())], { type: 'application/json' });
+//   await modelJsonRef.put(modelJsonBlob);
+
+//   // Save model weights (binary) to Firebase Storage
+//   const weights = await model.save(tf.io.encodeWeights);
+//   const weightsBuffer = await weights['my-model'];
+//   await modelWeightsRef.put(new Uint8Array(weightsBuffer));
+
+
+// const res = await model.save('localstorage://mymodel', true, true); 
+  
+// // Printing output 
+// console.log(JSON.stringify(res))
+// await model.save(tf.io.http(
+//   'gs://borisssfirebase.appspot.com', {method: 'PUT'}));
+   //const weights = await tf.io.encodeWeights(model.getWeights());
+   //console.log(weights)
+  // const weightsBlob = new Blob([weights], { type: 'application/octet-stream' });
+  // const storageRef = firebase.storage().ref();
+  // const modelRef = storageRef.child('your_model_weights.bin');
+
+  // modelRef.put(weightsBlob).then((snapshot) => {
+  //   console.log('Uploaded the model weights!');
+  // }).catch((error) => {
+  //   console.error('Error uploading the model weights:', error);
+  // });
+  let jsonFile, binFile;
+
+// Custom save handler
+const customSaveHandler = async (modelArtifacts) => {
+  // Access the model artifacts before saving
+  console.log('Model Artifacts:', modelArtifacts);
+
+  // Extract the JSON and binary data
+  const { modelTopology, weightSpecs, weightData } = modelArtifacts;
+
+  // Convert the JSON and binary data to strings
+  jsonFile = JSON.stringify({ modelTopology, weightSpecs });
+  binFile = new Uint8Array(weightData);
+
+  // You can perform additional processing or return the artifacts
+  // Return the modified modelArtifacts to continue with the default saving process
+  return { modelTopology, weightSpecs, weightData };
+};
+
+// Use withSaveHandler to apply the custom save handler
+const saveResult = await model.save(tf.io.withSaveHandler(customSaveHandler));
+const blob1 = new Blob([jsonFile], { type: 'application/json' });
+const blob2 = new Blob([binFile], { type: 'application/octet-stream' });
+
+// The jsonFile and binFile variables now contain the model artifacts
+console.log('JSON File:', jsonFile);
+console.log('Binary File:', binFile);
+
+const storageRef = firebase.storage().ref();
+  const horseRef1 = storageRef.child('my-model.json');
+  const task1 = horseRef1.put(blob1)
+  task1.then(snapshot => {
+    console.log(snapshot);
+    
+  })
+  const horseRef2 = storageRef.child('my-model.weights.bin');
+  const task2 = horseRef2.put(blob2)
+  task2.then(snapshot => {
+    console.log(snapshot);
+    
+  })
+
+
+  
+  // try {
+  //   // Check if the model is defined
+  //   if (!model) {
+  //     console.error('Model is undefined');
+  //     return;
+  //   }
+
+  //   // Check if the model has weights
+  //   const weights = model.getWeights();
+  //   if (!weights || weights.length === 0) {
+  //     console.error('Model has no weights');
+  //     return;
+  //   }
+  //   else{
+  //     console.log(weights)
+  //   }
+
+  //   // Continue with saving the model
+  //   const weightsData = await tf.io.encodeWeights(weights);
+  //   // ... rest of your save logic
+  // } catch (error) {
+  //   console.error('Error saving model:', error);
+  // }
 }
 
-export async function importModel(files){
-    // //const loadedModel = tf.loadLayersModel('downloads://my-model');
-    // const model = await tf.loadLayersModel(
-    //     tf.io.browserFiles([files[0], files[1]]));
-    // //model.loadLayersModel(path);
-    model = await tf.loadLayersModel('https://storage.googleapis.com/model_borisss/model/my-model.json')
-
-    //model = await tf.loadLayersModel('https://storage.googleapis.com/model_borisss/model/my-model.json');
 
 
-    // const [jsonFile, weightsFile] = files;
-
-    // // Read the files as buffers
-    // const jsonBuffer = await jsonFile.arrayBuffer();
-    // const weightsBuffer = await weightsFile.arrayBuffer();
-
-    // // Create IO handlers
-    // const modelJson = new TextDecoder().decode(jsonBuffer);
-    // const modelWeights = new Uint8Array(weightsBuffer);
-
-    // const model = await tf.loadLayersModel(
-    //     tf.io.fromMemory(modelJson, modelWeights)
-    // );
-
-    console.log(model);
-}
+export async function importModel(files) {
+    try {
+      await downloadModel();
+      return model_to_layers();
+    } catch (error) {
+      console.error("Error importing model:", error);
+      throw error; // Propagate the error to the caller
+    }
+  }
 
 export function add_model_layer(layer) {
-    // Check if TensorFlow.js is loaded
     if (typeof tf === 'undefined') {
         console.error('TensorFlow.js is not loaded. Please make sure it is loaded before calling add_model_layer.');
         return;
     }
     let nlayer;
 
-    // Your layer adding logic here
     switch (layer.type) {
         case LayerType.DENSE:
             nlayer = tf.layers.dense({ units: layer.numOfNeurons, activation: layer.activationType, batchInputShape: layer.inputShape});
             break;
         case LayerType.CONV:
-            nlayer = tf.layers.conv2d({ filters: layer.numOfKernels, kernelSize: layer.kernelSize, strides : layer.stride, padding : layer.padding, activation: layer.activationType,batchInputShape: layer.inputShape});
+            nlayer = tf.layers.conv2d({ filters: layer.numOfKernels, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activation: layer.activationType,batchInputShape: layer.inputShape});
             break;
         case LayerType.MAXP:
-            nlayer = tf.layers.maxPool2d({poolSize : layer.poolSize, strides : layer.stride, padding : layer.padding,batchInputShape: layer.inputShape});
+            nlayer = tf.layers.maxPool2d({poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding,batchInputShape: layer.inputShape});
             break;
         case LayerType.AVGP:
-            nlayer = tf.layers.avgPool2d({poolSize : layer.poolSize, strides : layer.stride, padding : layer.padding, batchInputShape: layer.inputShape});
+            nlayer = tf.layers.avgPool2d({poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, batchInputShape: layer.inputShape});
             break;
         case LayerType.DROP:
             nlayer = tf.layers.dropout({rate : layer.rate});
@@ -92,4 +211,36 @@ export function add_model_layer(layer) {
     console.log(model);
 }
 
+function model_to_layers() {
+    if (typeof tf === 'undefined') {
+        console.error('TensorFlow.js is not loaded. Please make sure it is loaded before calling add_model_layer.');
+        return;
+    }
+    let layers = [];
+    let i = 0;
+    model.layers.forEach(layer => {
+        switch(layer.constructor.className){
+            case LayerType.DENSE:
+                layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, inputShape : layer.batchInputShape});
+                break;
+            case LayerType.CONV:
+                layers.push({index : i, type : LayerType.CONV, numOfKernels : layer.filters, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activationType: layer.activation.constructor.className, inputShape : layer.batchInputShape})
+                break;
+            case 'MaxPooling2D':
+                layers.push({index : i, type : LayerType.MAXP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : layer.batchInputShape})
+                break;
+            case 'AveragePooling2D':
+                layers.push({index : i, type : LayerType.AVGP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : layer.batchInputShape})
+                break;
+            case LayerType.DROP:
+                layers.push({index : i, type : LayerType.DROP, rate : layer.rate})
+                break;
+            case LayerType.FLATTEN:
+                layers.push({index : i, type : LayerType.FLATTEN})
+                break;
+        }
+        i++;
+    })
+    return layers
+}
 

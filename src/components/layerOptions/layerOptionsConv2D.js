@@ -12,9 +12,10 @@ export default class LayerOptionsConv2D extends React.Component{
     onClose: this.props.onClose,
     activationType: this.props.activationType || this.activationTypes[0],
     kernelSize: this.props.kernelSize || [3,3],
-    stride: this.props.stride || [1,1],
+    strides: this.props.strides || [1,1],
     padding: this.props.padding || this.paddingTypes[0],
-    index: this.props.index
+    index: this.props.index,
+    inputShape : this.props.inputShape || null
   };
 
   selectedImage = require('./../../images/linear.png');
@@ -33,13 +34,13 @@ export default class LayerOptionsConv2D extends React.Component{
 
   handleStrideChange1 = (event) =>{
     this.setState({
-      stride: [parseInt(event.target.value,10),this.state.stride[1]]
+      strides: [parseInt(event.target.value,10),this.state.strides[1]]
     });
   }
 
   handleStrideChange2 = (event) =>{
     this.setState({
-      stride: [this.state.stride[0],parseInt(event.target.value,10)]
+      stride: [this.state.strides[0],parseInt(event.target.value,10)]
     });
   }
 
@@ -175,8 +176,8 @@ export default class LayerOptionsConv2D extends React.Component{
   
           <div className ="layerOptionsRow" style={{gridRow:6, gridColumn:1/3}}>
             <label className = "layerOptionsLabel">Strides:</label>
-            <input className="numberEditor" type="number" value={this.state.stride[0]} onChange={(event) => this.handleStrideChange1(event)}/>
-            <input className="numberEditor" type="number" value={this.state.stride[1]} onChange={(event) => this.handleStrideChange2(event)}/>
+            <input className="numberEditor" type="number" value={this.state.strides[0]} onChange={(event) => this.handleStrideChange1(event)}/>
+            <input className="numberEditor" type="number" value={this.state.strides[1]} onChange={(event) => this.handleStrideChange2(event)}/>
           </div>
   
           <div className ="layerOptionsRow" style={{gridRow:7, gridColumn:1/3}}>

@@ -9,9 +9,10 @@ export default class LayerOptionsAvgPool2D extends React.Component{
     type : this.props.type,
     onClose: this.props.onClose,
     poolSize : this.props.poolSize || [2,2],
-    stride: this.props.stride || [1,1],
+    strides: this.props.strides || [1,1],
     padding: this.props.padding || this.paddingTypes[0],
-    index: this.props.index
+    index: this.props.index,
+    inputShape : this.props.inputShape || null
   };
 
   componentDidUpdate(prevProps) {
@@ -67,15 +68,15 @@ export default class LayerOptionsAvgPool2D extends React.Component{
     });
   }
 
-  handleStrideChange1 = (event) =>{
+  handlestridesChange1 = (event) =>{
     this.setState({
-      stride: [parseInt(event.target.value,10), this.state.stride[1]]
+      strides: [parseInt(event.target.value,10), this.state.strides[1]]
     });
   }
 
-  handleStrideChange2 = (event) =>{
+  handlestridesChange2 = (event) =>{
     this.setState({
-      stride: [this.state.stride[0], parseInt(event.target.value,10)]
+      strides: [this.state.strides[0], parseInt(event.target.value,10)]
     });
   }
 
@@ -137,9 +138,9 @@ export default class LayerOptionsAvgPool2D extends React.Component{
           </div>
 
           <div className ="layerOptionsRow" style={{gridRow:4, gridColumn:1/3}}>
-            <label className = "layerOptionsLabel">Strides:</label>
-            <input className="numberEditor" type="number" value={this.state.stride[0]} onChange={(event) => this.handleStrideChange1(event)}/>
-            <input className="numberEditor" type="number" value={this.state.stride[1]} onChange={(event) => this.handleStrideChange2(event)}/>
+            <label className = "layerOptionsLabel">strides:</label>
+            <input className="numberEditor" type="number" value={this.state.strides[0]} onChange={(event) => this.handlestridesChange1(event)}/>
+            <input className="numberEditor" type="number" value={this.state.strides[1]} onChange={(event) => this.handlestridesChange2(event)}/>
           </div>
   
           <div className ="layerOptionsRow" style={{gridRow:5, gridColumn:1/3}}>

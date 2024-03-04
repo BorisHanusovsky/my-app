@@ -10,14 +10,13 @@ import { LayerType } from "./layers/layerEnum.js";
 
 const ModelPanel = ({layers, setLayerList}) => {
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(null);
-  const [keyIndex, setKeyIndex] = useState(0);
+  const [keyIndex, setKeyIndex] = useState(layers.length);
   const [layerOptVis, setLayerOptionsVisibility] = useState(false);
   const newLayerRef = useRef(null);
 
-  useEffect(() => {
-    // Notify the parent component when layers change
-    setLayerList(layers);
-  }, [layers, setLayerList]);
+  // useEffect(() => {
+  //   setLayerList(layers);
+  // }, [layers, setLayerList]);
   
 
 
@@ -48,34 +47,8 @@ const ModelPanel = ({layers, setLayerList}) => {
     }
   };
 
-  // const openLayerOptions = () => {
-  //   let modal = document.getElementById("myModal");
-  //   let modalLayers = document.getElementById("modal_layers");
-  //   var span = document.getElementsByClassName("close")[0];
-  //   modal.style.display = "block";
-  
-  //   span.onclick = function () {
-  //     modal.style.display = "none";
-  //     modalLayers.innerHTML = '';
-  //   };
-  
-  //   modalLayers.innerHTML = '';
-  
-  //   const layerTypesArray = Object.values(LayerType);
-  //   for (let dir of layerTypesArray) {
-  //     let element = document.createElement("button");
-  //     element.classList.add('layer_button');
-  //     element.textContent = dir;
-  //     element.setAttribute("layer_type", dir);
-  
-  //     // Add the click event listener directly
-  //     element.addEventListener('click', () => addLayer(dir));
-  
-  //     modalLayers.appendChild(element);
-  //   }
-  // };
-
   console.log("ModelPanel component rendered");
+  console.log(selectedLayerIndex, keyIndex);
 
   const addLayer = (layerType) => {
     setKeyIndex((prevKeyIndex) => {
@@ -109,11 +82,10 @@ const ModelPanel = ({layers, setLayerList}) => {
               type: layerType,
               index: prevKeyIndex,
               poolSize: [2,2],
-              strides: [1,2],
+              strides: [1,1],
               padding: "valid",
               isActive: false,
               inputShape : null
-
             };
             break;  
         case 'AvgPool2D':
@@ -150,10 +122,6 @@ const ModelPanel = ({layers, setLayerList}) => {
       }
       setSelectedLayerIndex(newLayer.index);
       newLayerRef.current = newLayer;
-
-      // Notify the parent component about the change
-      //setLayerList((prevLayers) => [...prevLayers, newLayer]);
-     
       return prevKeyIndex + 1;
     });
   };
@@ -167,15 +135,6 @@ const ModelPanel = ({layers, setLayerList}) => {
       });
     }
   }, [selectedLayerIndex, setLayerList]);
-
-  
-
-  // useEffect(() => {
-  //   // Notify the parent component when layers change
-  //   setLayerList(layers);
-  // }, [layers, setLayerList]);
-  
-  //useEffect(() => {onLayerListUpdate(layerList)},[layerList])
 
   const handleLayerClick = (index) => {
     setSelectedLayerIndex(index);
@@ -192,88 +151,27 @@ const ModelPanel = ({layers, setLayerList}) => {
     if (layer !== undefined) {
       let temp = [...layers];
       temp[selectedLayerIndex] = layer;
-      // Don't directly modify layers
       setLayerList(temp);
     }
   };
 
-  // const removeSelectedLayer = () => {
-  //   //if (layerList.length > 0) {
-  //   if (layers.length > 0) {
-  //     //const updatedLayerList = layerList.slice(0, -1);
-  //     //const updatedLayerList = layers.slice(0, -1);
-  //     //layers.pop();
-      
-  //     //onLayersChange(layers.slice(0, -1));
-  //     setLayerList(layers.slice(0, -1))
-      
-  //     //setLayerList(updatedLayerList, onLayersChange(layerList));
-  //     setSelectedLayerIndex(null)
-  //     setKeyIndex((prevKeyIndex) =>(prevKeyIndex - 1))
-  //   }
-  // };
-
   const removeSelectedLayer = () => {
+    setSelectedLayerIndex(null);
     if (layers.length > 0) {
-      setLayerList((prevLayers) => prevLayers.slice(0, -1));
-      setSelectedLayerIndex(null);
       setKeyIndex((prevKeyIndex) => prevKeyIndex - 1);
+      setLayerList((prevLayers) => prevLayers.slice(0, -1));
+    }
+    else{
+      setKeyIndex(0);
     }
   };
 
   useEffect(() => {
-    // Your existing code for handling selected layers
-  }, [selectedLayerIndex]);
+   //alert(layers.length);
+   setKeyIndex(layers.length);
+  }, [layers]);
 
   let layerOptions;
-  // if (layerList[selectedLayerIndex] && layerList[selectedLayerIndex].type !== undefined) {
-  //   if (layerList[selectedLayerIndex].type === "Conv2D")
-  //     layerOptions = <LayerOptionsConv2D key={layerList?.[selectedLayerIndex]?.index}
-  //                                        index = {layerList?.[selectedLayerIndex]?.index}
-  //                                        type={layerList?.[selectedLayerIndex]?.type || ""}
-  //                                        numOfKernels={layerList?.[selectedLayerIndex]?.numOfKernels}
-  //                                        kernelSize={layerList?.[selectedLayerIndex]?.kernelSize}
-  //                                        strides={layerList?.[selectedLayerIndex]?.strides}
-  //                                        padding={layerList?.[selectedLayerIndex]?.padding}
-  //                                        activationType = {layerList?.[selectedLayerIndex]?.activationType}
-  //                                        vis={layerOptVis} 
-  //                                        onClose={HandleLayerOptionClose} />;
-  //   else if (layerList[selectedLayerIndex].type === "Dense")
-  //     layerOptions = <LayerOptions key={layerList?.[selectedLayerIndex]?.index}
-  //                                  index = {layerList?.[selectedLayerIndex]?.index}
-  //                                  type={layerList?.[selectedLayerIndex]?.type || ""} 
-  //                                  numOfNeurons={layerList?.[selectedLayerIndex]?.numOfNeurons} 
-  //                                  activationType = {layerList?.[selectedLayerIndex]?.activationType}
-  //                                  vis={layerOptVis} 
-  //                                  onClose={HandleLayerOptionClose} />;
-  //   else if (layerList[selectedLayerIndex].type === "MaxPool2D")
-  //   layerOptions = <LayerOptionsMaxPool2D key={layerList?.[selectedLayerIndex]?.index}
-  //                                     index = {layerList?.[selectedLayerIndex]?.index}
-  //                                     type={layerList?.[selectedLayerIndex]?.type || ""}
-  //                                     poolSize={layerList?.[selectedLayerIndex]?.poolSize}
-  //                                     strides={layerList?.[selectedLayerIndex]?.strides}
-  //                                     padding={layerList?.[selectedLayerIndex]?.padding}
-  //                                     vis={layerOptVis} 
-  //                                     onClose={HandleLayerOptionClose} />;
-  //   else if (layerList[selectedLayerIndex].type === "AvgPool2D")
-  //   layerOptions = <LayerOptionsAvgPool2D key={layerList?.[selectedLayerIndex]?.index}
-  //                                     index = {layerList?.[selectedLayerIndex]?.index}
-  //                                     type={layerList?.[selectedLayerIndex]?.type || ""}
-  //                                     poolSize={layerList?.[selectedLayerIndex]?.poolSize}
-  //                                     strides={layerList?.[selectedLayerIndex]?.strides}
-  //                                     padding={layerList?.[selectedLayerIndex]?.padding}
-  //                                     vis={layerOptVis} 
-  //                                     onClose={HandleLayerOptionClose} />;
-  //   else if (layerList[selectedLayerIndex].type === "Dropout")
-  //   layerOptions = <LayerOptionsDropout key={layerList?.[selectedLayerIndex]?.index}
-  //                                     index = {layerList?.[selectedLayerIndex]?.index}
-  //                                     type={layerList?.[selectedLayerIndex]?.type || ""}
-  //                                     rate={layerList?.[selectedLayerIndex]?.rate}
-  //                                     vis={layerOptVis} 
-  //                                     onClose={HandleLayerOptionClose} />;
-  //   else{
-  //     layerOptions = null
-  //   }
 
   if (layers[selectedLayerIndex] && layers[selectedLayerIndex].type !== undefined) {
     if (layers[selectedLayerIndex].type === "Conv2D")

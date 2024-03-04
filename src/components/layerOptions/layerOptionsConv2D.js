@@ -18,7 +18,7 @@ export default class LayerOptionsConv2D extends React.Component{
     inputShape : this.props.inputShape || null
   };
 
-  selectedImage = require('./../../images/linear.png');
+  selectedImage = require(`./../../images/${this.state.activationType}.png`);
 
   handleKernelSize1Change = (event) =>{
     this.setState({

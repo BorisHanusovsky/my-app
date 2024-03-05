@@ -167,7 +167,6 @@ const ModelPanel = ({layers, setLayerList}) => {
   };
 
   useEffect(() => {
-   //alert(layers.length);
    setKeyIndex(layers.length);
   }, [layers]);
 

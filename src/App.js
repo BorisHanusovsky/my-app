@@ -1,17 +1,22 @@
 // App.js
-import React, { useState,useEffect } from 'react';
-import logo from './logo.svg';
+import React, { useState,useEffect, useRef } from 'react';
 import './App.css';
 import './model.js';
 import ModelPanel from './components/modelPanel.js';
 import Navbar from './components/navbar.js';
 import Footer from './components/footer/footer.js';
-import {createModel, add_model_layer, saveModel, compileModel,importModel,getLayers} from './model.js'
+import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames} from './model.js'
 import * as tf from '@tensorflow/tfjs'
+import ModalSavedModels from './components/modals/modalSavedModels.js';
 
 
 function App() {
   let [layerList, setLayerList] = useState([]);
+  const [saveResultVis, setSaveResultVis] = useState(false);
+  const selectedModel = useRef(null);
+  const [modelNames, setModelNames] = useState([]);
+
+
   useEffect(() => {
     console.log(`Layers in app : ${layerList}`);
   });
@@ -22,24 +27,89 @@ function App() {
 
   const onSaveButtonPressed = () =>{
     if (layerList){
-      createModel();
-      for(var i = 0; i< layerList.length; i++)
-        add_model_layer(layerList[i])
-      compileModel();
-      saveModel();
+      if (layerList.length!== 0){
+        createModel();
+        for(var i = 0; i< layerList.length; i++)
+          add_model_layer(layerList[i]);
+        if (compileModel() === true){
+          const modelName = window.prompt("Name your model","MyModel");
+          if(modelName !== null){
+            saveModel(modelName)
+            .then((successMessage) => {
+              alert(successMessage);
+            })
+            .catch((errorMessage) => {
+              alert(errorMessage);
+            });
+          }
+        }
+      }
+      else{
+        alert("❌❌ Failed saving model, model does not have layers defined ❌❌");
+      }
     }
   }
 
-  const onImportButtonPressed = (files) => {
-    console.log(files);
-    importModel(files)
-      .then((layers) => {
-        console.log("Setting layerList state:", layers);
-        setLayerList([...layers]);
-      })
-      .catch((error) => {
-        console.error("Error importing model:", error);
-      });
+  async function onModalSavedModelClose(model){
+    selectedModel.current = model;
+    setSaveResultVis(false);
+    if(model){
+      const layers = await importModel(selectedModel);
+      console.log('Setting layerList state:', layers);
+      setLayerList([...layers]);
+    }
+  }
+
+  // const onImportButtonPressed = () => {
+  //   getModelNames()
+  //     .then((names) => {
+  //       modelNames.current = names;
+  //       setSaveResultVis(true);
+  //       importModel()
+  //       .then((layers) => {
+  //         console.log("Setting layerList state:", layers);
+  //         setLayerList([...layers]);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error importing model:", error);
+  //       });
+  //     })
+  // };
+
+  // const onImportButtonPressed = () => {
+  //   getModelNames()
+  //     .then((names) => {
+  //       setModelNames(names);
+  //       setSaveResultVis(true);
+  //       importModel()
+  //         .then((layers) => {
+  //           console.log('Setting layerList state:', layers);
+  //           setLayerList([...layers]);
+  //         })
+  //         .catch((error) => {
+  //           console.error('Error importing model:', error);
+  //         });
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error fetching model names:', error);
+  //     });
+  // };
+
+  const onImportButtonPressed = async () => {
+    try {
+      const names = await getModelNames();
+      console.log("back in app");
+      if (names && names.length > 0) {
+        setModelNames(names);
+        setSaveResultVis(true);
+        
+      } 
+      else {
+        alert("💾 💾No saved models 💾 💾 \n")
+      }
+    } catch (error) {
+      console.error('Error fetching model names or importing model:', error);
+    }
   };
 
   function displayImages(files) {
@@ -82,6 +152,8 @@ function App() {
           <div id="modal_layers"></div>
         </div>
       </div>
+
+      <ModalSavedModels visibility = {saveResultVis} onModalSavedModelClose = {onModalSavedModelClose} modelNames = {modelNames}/>
     </div>
   );
 }

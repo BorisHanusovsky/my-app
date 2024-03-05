@@ -16,13 +16,26 @@ const app = firebase.initializeApp({
     appId: "1:468959726053:web:aa97f1f9484cbaedb1470c"
   });
 
-const storage = getStorage(app);
-console.log(storage);
+  export async function getModelNames() {
+    try {
+      const result = await firebase.storage().ref().listAll();
+      let modelNames = [];
+  
+      result.prefixes.forEach(function (prefix) {
+        console.log(prefix.name);
+        modelNames.push(prefix.name);
+      });
+  
+      return modelNames;
+    } catch (error) {
+      console.error(error);
+      throw error; // Re-throw the error to propagate it to the caller
+    }
+  }
 
-
-export async function downloadModel() {
+export async function downloadModel(modelName) {
     const storageRef = firebase.storage().ref();
-    var modelRef = storageRef.child('my-model.json');
+    var modelRef = storageRef.child(`${modelName.current}/${modelName.current}.json`);
   
     try {
       // Get the download URL
@@ -63,114 +76,68 @@ export function createModel() {
 
 export function compileModel(){
     console.log(model);
-    model.compile({ optimizer: 'adam',loss: 'categoricalCrossentropy', metrics: ['accuracy']});
+    try{
+      model.compile({ optimizer: 'adam',loss: 'categoricalCrossentropy', metrics: ['accuracy']});
+      return true;
+    }
+    catch(err){
+      alert(`❌❌ Model compilation failed❌❌\n ${err}`);
+      return false;
+    }
 }
 
-const modelJsonRef = ref(storage, 'my-model.json');
-const modelWeightsRef = ref(storage, 'my-model.weights.bin');
+export async function saveModel(modelName) {
+  try{
+    let jsonFile, binFile;
+    // Custom save handler
+    const customSaveHandler = async (modelArtifacts) => {
+      // Access the model artifacts before saving
+      console.log('Model Artifacts:', modelArtifacts);
 
-export async function saveModel() {
-//   // Save model architecture (JSON) to Firebase Storage
-//   const modelJsonBlob = new Blob([JSON.stringify(model.toJSON())], { type: 'application/json' });
-//   await modelJsonRef.put(modelJsonBlob);
+      // Extract the JSON and binary data
+      const { modelTopology, weightSpecs, weightData } = modelArtifacts;
 
-//   // Save model weights (binary) to Firebase Storage
-//   const weights = await model.save(tf.io.encodeWeights);
-//   const weightsBuffer = await weights['my-model'];
-//   await modelWeightsRef.put(new Uint8Array(weightsBuffer));
+      // Convert the JSON and binary data to strings
+      jsonFile = JSON.stringify({ modelTopology, weightSpecs });
+      binFile = new Uint8Array(weightData);
 
+      // You can perform additional processing or return the artifacts
+      // Return the modified modelArtifacts to continue with the default saving process
+      return { modelTopology, weightSpecs, weightData };
+    };
 
-// const res = await model.save('localstorage://mymodel', true, true); 
-  
-// // Printing output 
-// console.log(JSON.stringify(res))
-// await model.save(tf.io.http(
-//   'gs://borisssfirebase.appspot.com', {method: 'PUT'}));
-   //const weights = await tf.io.encodeWeights(model.getWeights());
-   //console.log(weights)
-  // const weightsBlob = new Blob([weights], { type: 'application/octet-stream' });
-  // const storageRef = firebase.storage().ref();
-  // const modelRef = storageRef.child('your_model_weights.bin');
+    // Use withSaveHandler to apply the custom save handler
+    const saveResult = await model.save(tf.io.withSaveHandler(customSaveHandler));
+    const blob1 = new Blob([jsonFile], { type: 'application/json' });
+    const blob2 = new Blob([binFile], { type: 'application/octet-stream' });
 
-  // modelRef.put(weightsBlob).then((snapshot) => {
-  //   console.log('Uploaded the model weights!');
-  // }).catch((error) => {
-  //   console.error('Error uploading the model weights:', error);
-  // });
-  let jsonFile, binFile;
+    // The jsonFile and binFile variables now contain the model artifacts
+    console.log('JSON File:', jsonFile);
+    console.log('Binary File:', binFile);
 
-// Custom save handler
-const customSaveHandler = async (modelArtifacts) => {
-  // Access the model artifacts before saving
-  console.log('Model Artifacts:', modelArtifacts);
-
-  // Extract the JSON and binary data
-  const { modelTopology, weightSpecs, weightData } = modelArtifacts;
-
-  // Convert the JSON and binary data to strings
-  jsonFile = JSON.stringify({ modelTopology, weightSpecs });
-  binFile = new Uint8Array(weightData);
-
-  // You can perform additional processing or return the artifacts
-  // Return the modified modelArtifacts to continue with the default saving process
-  return { modelTopology, weightSpecs, weightData };
-};
-
-// Use withSaveHandler to apply the custom save handler
-const saveResult = await model.save(tf.io.withSaveHandler(customSaveHandler));
-const blob1 = new Blob([jsonFile], { type: 'application/json' });
-const blob2 = new Blob([binFile], { type: 'application/octet-stream' });
-
-// The jsonFile and binFile variables now contain the model artifacts
-console.log('JSON File:', jsonFile);
-console.log('Binary File:', binFile);
-
-const storageRef = firebase.storage().ref();
-  const horseRef1 = storageRef.child('my-model.json');
-  const task1 = horseRef1.put(blob1)
-  task1.then(snapshot => {
-    console.log(snapshot);
-    
-  })
-  const horseRef2 = storageRef.child('my-model.weights.bin');
-  const task2 = horseRef2.put(blob2)
-  task2.then(snapshot => {
-    console.log(snapshot);
-    
-  })
-
-
-  
-  // try {
-  //   // Check if the model is defined
-  //   if (!model) {
-  //     console.error('Model is undefined');
-  //     return;
-  //   }
-
-  //   // Check if the model has weights
-  //   const weights = model.getWeights();
-  //   if (!weights || weights.length === 0) {
-  //     console.error('Model has no weights');
-  //     return;
-  //   }
-  //   else{
-  //     console.log(weights)
-  //   }
-
-  //   // Continue with saving the model
-  //   const weightsData = await tf.io.encodeWeights(weights);
-  //   // ... rest of your save logic
-  // } catch (error) {
-  //   console.error('Error saving model:', error);
-  // }
+    const storageRef = firebase.storage().ref();
+    const horseRef1 = storageRef.child(`${modelName}/${modelName}.json`);
+    const task1 = horseRef1.put(blob1)
+    task1.then(snapshot => {
+      console.log(snapshot);
+    })
+    const horseRef2 = storageRef.child(`${modelName}/${modelName}.weights.bin`);
+    const task2 = horseRef2.put(blob2)
+    task2.then(snapshot => {
+      console.log(snapshot);
+    })
+    return Promise.resolve("✅ Model saved successfully! ✅");
+  }
+  catch(err){
+    return Promise.reject(`❌❌ Failed saving model❌❌\n ${err}`);
+  }
 }
 
 
 
-export async function importModel(files) {
+export async function importModel(modelName) {
     try {
-      await downloadModel();
+      await downloadModel(modelName);
       return model_to_layers();
     } catch (error) {
       console.error("Error importing model:", error);
@@ -184,8 +151,8 @@ export function add_model_layer(layer) {
         return;
     }
     let nlayer;
-
-    switch (layer.type) {
+    try{
+      switch (layer.type) {
         case LayerType.DENSE:
             nlayer = tf.layers.dense({ units: layer.numOfNeurons, activation: layer.activationType, batchInputShape: layer.inputShape});
             break;
@@ -208,6 +175,11 @@ export function add_model_layer(layer) {
             console.log('Unknown layer type');
     }
     model.add(nlayer)
+    }
+    catch(err){
+      alert(`❌❌ Layer could not be added to model❌❌\n ${err}`);
+    }
+   
     console.log(model);
 }
 

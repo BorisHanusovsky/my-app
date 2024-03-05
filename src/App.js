@@ -8,6 +8,7 @@ import Footer from './components/footer/footer.js';
 import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames} from './model.js'
 import * as tf from '@tensorflow/tfjs'
 import ModalSavedModels from './components/modals/modalSavedModels.js';
+import DisplayPanel from './components/DisplayPanel.js';
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [saveResultVis, setSaveResultVis] = useState(false);
   const selectedModel = useRef(null);
   const [modelNames, setModelNames] = useState([]);
+  const [dataset, setDataset] = useState(null);
 
 
   useEffect(() => {
@@ -22,7 +24,8 @@ function App() {
   });
   
   const onFilesSelected = (files) =>{
-    displayImages(files)
+    //displayImages(files)
+    setDataset(files);
   }
 
   const onSaveButtonPressed = () =>{
@@ -135,10 +138,11 @@ function App() {
       <div className="content">
         <ModelPanel layers = {layerList} setLayerList ={setLayerList}/>
         <div className="right_panel">
-          <div className="kernel_panel" id="imageContainer">
+          {/* <div className="kernel_panel" id="imageContainer">
             <h2>Display panel</h2>
             <h3 id="title_selected_layer"></h3>
-          </div>
+          </div> */}
+          <DisplayPanel dataset ={dataset}/>
           <div className="graph_panel">
             <h2>Graph panel</h2>
           </div>

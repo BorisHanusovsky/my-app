@@ -131,8 +131,9 @@ class MnistData {
     let mnistData = new MnistData();
     await mnistData.load();
     const { xs, labels } = mnistData.getTestData();
-    const  arr = xs.arraySync()
+    const  arr = xs.arraySync();
     console.log(arr);
+    onFilesSelected(arr);
   }
 
   function handleLoadModelClicked() {

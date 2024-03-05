@@ -142,7 +142,7 @@ export default class LayerOptionsConv2D extends React.Component{
       if (this.props.index === 0){
         shapeEditor = <div className ="layerOptionsRow" style={{gridRow:2, gridColumn:1/3}}> 
                           <label className = "layerOptionsLabel">Input shape:</label>
-                          <input id="layerCountTextbox" type="text" className="textik" value={this.state.inputShape} onChange={(event) => this.handleInputShapeChange(event)}/>
+                          <input title="batch size , height, width, chanels" id="layerCountTextbox" type="text" className="textik" value={this.state.inputShape} onChange={(event) => this.handleInputShapeChange(event)}/>
                       </div>
                       }
       return (

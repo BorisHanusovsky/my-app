@@ -1,107 +1,107 @@
-// import {LayerType} from "./components/layers/layerEnum"
+import {LayerType} from "./components/layers/layerEnum"
 
-// export function onTensorFlowScriptLoad1() {
-//     alert("hello");
+export function onTensorFlowScriptLoad1() {
+    alert("hello");
+  }
+  
+export function onTensorFlowScriptLoad2() {
+    alert("hello");
+  }
+  
+  // Dynamically load TensorFlow.js
+//   function loadTensorFlow() {
+//     const script = document.createElement("script");
+//     script.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js";
+//     script.onload = onTensorFlowScriptLoad1; // You can adjust this as needed
+//     document.head.appendChild(script);
 //   }
   
-// export function onTensorFlowScriptLoad2() {
-//     alert("hello");
-//   }
+//   // Call the function to load TensorFlow.js
+//   loadTensorFlow();
   
-//   // Dynamically load TensorFlow.js
-// //   function loadTensorFlow() {
-// //     const script = document.createElement("script");
-// //     script.src = "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.0/dist/tf.min.js";
-// //     script.onload = onTensorFlowScriptLoad1; // You can adjust this as needed
-// //     document.head.appendChild(script);
-// //   }
-  
-// //   // Call the function to load TensorFlow.js
-// //   loadTensorFlow();
-  
-//   // Rest of your model.js code
-//   // ...
+  // Rest of your model.js code
+  // ...
 
-// //Generate synthetic data for a binary classification problem
-// function generateData(numSamples, inputSize) {
-//     const X = [];
-//     const y = [];
+//Generate synthetic data for a binary classification problem
+function generateData(numSamples, inputSize) {
+    const X = [];
+    const y = [];
 
-//     for (let i = 0; i < numSamples; i++) {
-//         const features = [];
-//         for (let j = 0; j < inputSize; j++) {
-//             features.push(Math.random()); // Replace with your data generation logic
-//         }
-//         const label = Math.random() > 0.5 ? 1 : 0; // Binary classification
+    for (let i = 0; i < numSamples; i++) {
+        const features = [];
+        for (let j = 0; j < inputSize; j++) {
+            features.push(Math.random()); // Replace with your data generation logic
+        }
+        const label = Math.random() > 0.5 ? 1 : 0; // Binary classification
 
-//         X.push(features);
-//         y.push(label);
-//     }
+        X.push(features);
+        y.push(label);
+    }
 
-//     return { X, y };
-// }
+    return { X, y };
+}
 
-// // Split data into training and testing sets
-// function splitData(data, splitRatio = 0.8) {
-//     const numSamples = data.X.length;
-//     const numTrainingSamples = Math.floor(numSamples * splitRatio);
+// Split data into training and testing sets
+function splitData(data, splitRatio = 0.8) {
+    const numSamples = data.X.length;
+    const numTrainingSamples = Math.floor(numSamples * splitRatio);
 
-//     const trainingData = {
-//         X: data.X.slice(0, numTrainingSamples),
-//         y: data.y.slice(0, numTrainingSamples),
-//     };
+    const trainingData = {
+        X: data.X.slice(0, numTrainingSamples),
+        y: data.y.slice(0, numTrainingSamples),
+    };
 
-//     const testingData = {
-//         X: data.X.slice(numTrainingSamples),
-//         y: data.y.slice(numTrainingSamples),
-//     };
+    const testingData = {
+        X: data.X.slice(numTrainingSamples),
+        y: data.y.slice(numTrainingSamples),
+    };
 
-//     return { trainingData, testingData };
-// }
+    return { trainingData, testingData };
+}
 
-// // Example usage
-// const numSamples = 1000;
-// const inputSize = 3;
-// const outputSize = 2;
+// Example usage
+const numSamples = 1000;
+const inputSize = 3;
+const outputSize = 2;
 
-// console.log(generateData(1000,3))
-// // Training data
-// //const Xtrain = [[0.5, 0.4, 0.2], [0.1, 0.4, 0.2], [0.1, 0.2, 0.4]];
-// let {X:Xtrain,y:Ytrain} = generateData(1000,3);
-// //const Ytrain = [1, 0, 0];
+console.log(generateData(1000,3))
+// Training data
+//const Xtrain = [[0.5, 0.4, 0.2], [0.1, 0.4, 0.2], [0.1, 0.2, 0.4]];
+let {X:Xtrain,y:Ytrain} = generateData(1000,3);
+//const Ytrain = [1, 0, 0];
 
-// console.log('Training Data:', Xtrain);
-// console.log('Training labels:', Ytrain);
+console.log('Training Data:', Xtrain);
+console.log('Training labels:', Ytrain);
 
-// // Convert labels to categorical format
-// const yTrain = tf.oneHot(tf.tensor1d(Ytrain, 'int32'), outputSize);
+// Convert labels to categorical format
+const yTrain = tf.oneHot(tf.tensor1d(Ytrain, 'int32'), outputSize);
 
-// // Rest of the code remains unchanged
-// const inputLayer = tf.layers.dense({ units: 10, inputShape: [inputSize] });
-// const hiddenLayer1 = tf.layers.dense({ units: 20, activation: 'relu' });
-// const hiddenLayer2 = tf.layers.dense({ units: 20, activation: 'relu' });
-// const outputLayer = tf.layers.dense({ units: outputSize, activation: 'softmax' });
+// Rest of the code remains unchanged
+const inputLayer = tf.layers.dense({ units: 10, inputShape: [inputSize] });
+const hiddenLayer1 = tf.layers.dense({ units: 20, activation: 'relu' });
+const hiddenLayer2 = tf.layers.dense({ units: 20, activation: 'relu' });
+const outputLayer = tf.layers.dense({ units: outputSize, activation: 'softmax' });
 
-// const model = tf.sequential();
-// model.add(inputLayer);
-// model.add(hiddenLayer1);
-// model.add(hiddenLayer2);
-// model.add(outputLayer);
+const model = tf.sequential();
+model.add(inputLayer);
+model.add(hiddenLayer1);
+model.add(hiddenLayer2);
+model.add(outputLayer);
 
-// model.compile({
-//     optimizer: 'adam',
-//     loss: 'categoricalCrossentropy', // Change to categoricalCrossentropy
-//     metrics: ['accuracy']
-// });
+model.compile({
+    optimizer: 'adam',
+    loss: 'categoricalCrossentropy', // Change to categoricalCrossentropy
+    metrics: ['accuracy']
+});
 
-// const xTrain = tf.tensor2d(Xtrain, [numSamples, inputSize]);
+const xTrain = tf.tensor2d(Xtrain, [numSamples, inputSize]);
 
-// model.fit(xTrain, yTrain, {
-//     epochs: 10,
-//     batchSize: 32
-// }).then(() => {
-//     console.log('Training finished');
-//     // Use the model to make predictions
-//     const prediction = model.predict(tf.tensor2d([[0.3, 0.2, 0.5]], [1, inputSize]));
-//     prediction.print();
-// });
+model.fit(xTrain, yTrain, {
+    epochs: 10,
+    batchSize: 32
+}).then(() => {
+    console.log('Training finished');
+    // Use the model to make predictions
+    const prediction = model.predict(tf.tensor2d([[0.3, 0.2, 0.5]], [1, inputSize]));
+    prediction.print();
+});

@@ -3,10 +3,12 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage'
 import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup} from "firebase/auth";
 import { getStorage,ref,getDownloadURL,uploadBytes } from "firebase/storage";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
+
 const tf = require('@tensorflow/tfjs');
 
 let model;
-let layers;
+let trainingCompleted = false
 const app = firebase.initializeApp({
     apiKey: "AIzaSyCUQIQ2L3LSV_5cPtSZ97pRWBzxdgvXWHY",
     authDomain: "borisssfirebase.firebaseapp.com",
@@ -33,16 +35,40 @@ const app = firebase.initializeApp({
     }
   }
 
+//   const eventSource = new EventSource("/events");
+
+//   eventSource.onmessage = function(event) {
+//     const data = JSON.parse(event.data);
+//     console.log(data);
+//     const messagesDiv = document.getElementById('messages');
+//     messagesDiv.innerHTML += `<p>${data.message} at ${data.timestamp}</p>`;
+// };
+
+// eventSource.onerror = function(error) {
+//     console.error("EventSource failed:", error);
+//     eventSource.close();
+// };
+
+//   onMessage(messaging, (payload) => {
+//     console.log('Message received. ', payload);
+//     alert("yo")
+//     // Display notification or perform an action based on the payload
+// });
+
 export async function downloadModel(modelName) {
     const storageRef = firebase.storage().ref();
+    
+    //var modelRef = storageRef.child(`Convolucka/Convolucka.json`);
     var modelRef = storageRef.child(`${modelName.current}/${modelName.current}.json`);
-  
+    //var modelRef = storageRef.child(`tfjs_model/model.json`);
+    console.log(modelRef);
     try {
       // Get the download URL
       const url = await modelRef.getDownloadURL();
       console.log(url);
   
       // Assuming `model` is declared in the outer scope
+      //model = await tf.loadLayersModel('https://firebasestorage.googleapis.com/v0/b/borisssfirebase.appspot.com/o/modelik%2Fmodelik.json?alt=media&token=05dad239-a402-4d49-92e9-fad049ddc440');
       model = await tf.loadLayersModel(url);
       console.log(model)
   
@@ -86,52 +112,123 @@ export function compileModel(){
     }
 }
 
-export async function saveModel(modelName) {
-  try{
-    let jsonFile, binFile;
-    // Custom save handler
-    const customSaveHandler = async (modelArtifacts) => {
-      // Access the model artifacts before saving
-      console.log('Model Artifacts:', modelArtifacts);
-
-      // Extract the JSON and binary data
-      const { modelTopology, weightSpecs, weightData } = modelArtifacts;
-
-      // Convert the JSON and binary data to strings
-      jsonFile = JSON.stringify({ modelTopology, weightSpecs });
-      binFile = new Uint8Array(weightData);
-
-      // You can perform additional processing or return the artifacts
-      // Return the modified modelArtifacts to continue with the default saving process
-      return { modelTopology, weightSpecs, weightData };
-    };
-
-    // Use withSaveHandler to apply the custom save handler
-    const saveResult = await model.save(tf.io.withSaveHandler(customSaveHandler));
+async function uploadModelArtifacts(modelName, jsonFile, binFile) {
+    // Upload JSON and binary files to Firebase Storage
     const blob1 = new Blob([jsonFile], { type: 'application/json' });
     const blob2 = new Blob([binFile], { type: 'application/octet-stream' });
 
-    // The jsonFile and binFile variables now contain the model artifacts
-    console.log('JSON File:', jsonFile);
-    console.log('Binary File:', binFile);
-
     const storageRef = firebase.storage().ref();
-    const horseRef1 = storageRef.child(`${modelName}/${modelName}.json`);
-    const task1 = horseRef1.put(blob1)
+    const jsonRef = storageRef.child(`${modelName}/${modelName}.json`);
+    const task1 = jsonRef.put(blob1)
     task1.then(snapshot => {
       console.log(snapshot);
     })
-    const horseRef2 = storageRef.child(`${modelName}/${modelName}.weights.bin`);
-    const task2 = horseRef2.put(blob2)
+    const binRef = storageRef.child(`${modelName}/${modelName}.weights.bin`);
+    const task2 = binRef.put(blob2)
     task2.then(snapshot => {
       console.log(snapshot);
     })
-    return Promise.resolve("✅ Model saved successfully! ✅");
+}
+
+export async function saveModel(modelName) {
+  try{
+      let jsonFile, binFile;
+      const customSaveHandler = async (modelArtifacts) => {
+          const { modelTopology, weightSpecs, weightData } = modelArtifacts;
+          jsonFile = JSON.stringify({ modelTopology, weightSpecs });
+          binFile = new Uint8Array(weightData);
+          return { modelTopology, weightSpecs, weightData };
+      };
+
+      await model.save(tf.io.withSaveHandler(customSaveHandler));
+      await uploadModelArtifacts(modelName, jsonFile, binFile)
+      return Promise.resolve("✅ Model saved successfully! ✅");
   }
   catch(err){
     return Promise.reject(`❌❌ Failed saving model❌❌\n ${err}`);
   }
 }
+
+export async function trainAndFetchWeights(modelName) {
+  try {
+    if (!modelName) { // Assuming you meant to check modelName here
+      alert("No model defined");
+      return;
+    }
+    await trainModel(modelName); // Make sure this function handles errors/exceptions appropriately
+    await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
+    const activations = await fetchWeights(); // This should correctly fetch or return null/undefined on failure
+    return activations; // This could be null/undefined if fetching failed
+  } catch (error) {
+    console.error("An error occurred during training or fetching weights:", error);
+    // Handle the error, possibly by alerting the user or updating the state
+    return null; // Ensure the caller knows an error occurred
+  }
+}
+
+
+const ip = '34.141.235.116'
+
+export async function trainModel(modelName) {
+  
+  const response = await fetch(`http://${ip}:5000/train`, {
+        method: 'POST',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({'dir': modelName})
+      });
+      console.log(response)
+}
+
+async function waitForTrainingToComplete() {
+  while (!trainingCompleted) {
+    await checkTrainingStatus();
+    if (!trainingCompleted) {
+      // Wait for some time before checking again
+      await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+    }
+  }
+  console.log("Training has completed2.");
+  // Proceed to fetch weights or handle completion
+}
+
+async function checkTrainingStatus() {
+  try {
+    // Assuming `/status` is an endpoint that returns the training status
+    const response = await fetch(`http://${ip}:5000/status`);
+    const statusData = await response.json();
+    if (statusData.status === 'completed') {
+      console.log("Training completed1");
+      trainingCompleted = true
+      return true;
+    } else {
+      console.log("Training still in progress");
+      return false;
+    }
+  } catch (error) {
+    console.error('Error checking training status:', error);
+    throw error;
+  }
+}
+
+async function fetchWeights() {
+  try {
+    const response = await fetch(`http://${ip}:5000/activations`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch weights');
+    }
+    const weightsData = await response.json();
+    console.log('Weights:', weightsData);
+    return weightsData.activations
+    // Handle the weights data (e.g., load the model with these weights)
+  } catch (error) {
+    console.error('Error fetching weights:', error.message);
+    throw error;
+  }
+}
+
+
 
 
 
@@ -194,24 +291,29 @@ function model_to_layers() {
         switch(layer.constructor.className){
             case LayerType.DENSE:
                 layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, inputShape : layer.batchInputShape});
+                i++;
                 break;
             case LayerType.CONV:
                 layers.push({index : i, type : LayerType.CONV, numOfKernels : layer.filters, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activationType: layer.activation.constructor.className, inputShape : layer.batchInputShape})
+                i++;
                 break;
             case 'MaxPooling2D':
                 layers.push({index : i, type : LayerType.MAXP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : layer.batchInputShape})
+                i++;
                 break;
             case 'AveragePooling2D':
                 layers.push({index : i, type : LayerType.AVGP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : layer.batchInputShape})
+                i++;
                 break;
             case LayerType.DROP:
                 layers.push({index : i, type : LayerType.DROP, rate : layer.rate})
+                i++;
                 break;
             case LayerType.FLATTEN:
                 layers.push({index : i, type : LayerType.FLATTEN})
+                i++;
                 break;
         }
-        i++;
     })
     return layers
 }

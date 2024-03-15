@@ -5,7 +5,7 @@ import './model.js';
 import ModelPanel from './components/modelPanel.js';
 import Navbar from './components/navbar.js';
 import Footer from './components/footer/footer.js';
-import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames} from './model.js'
+import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames, trainAndFetchWeights} from './model.js'
 import * as tf from '@tensorflow/tfjs'
 import ModalSavedModels from './components/modals/modalSavedModels.js';
 import DisplayPanel from './components/DisplayPanel.js';
@@ -17,11 +17,12 @@ function App() {
   const selectedModel = useRef(null);
   const [modelNames, setModelNames] = useState([]);
   const [dataset, setDataset] = useState(null);
-
+  const [dataLoading, setDataLoading] = useState(false);
+  const [activations, setActivations] = useState([])
 
   useEffect(() => {
     console.log(`Layers in app : ${layerList}`);
-  });
+  },[layerList]);
   
   const onFilesSelected = (files) =>{
     //displayImages(files)
@@ -35,9 +36,9 @@ function App() {
         for(var i = 0; i< layerList.length; i++)
           add_model_layer(layerList[i]);
         if (compileModel() === true){
-          const modelName = window.prompt("Name your model","MyModel");
-          if(modelName !== null){
-            saveModel(modelName)
+          selectedModel.current =  window.prompt("Name your model","MyModel");
+          if(selectedModel.current !== null){
+            saveModel(selectedModel.current)
             .then((successMessage) => {
               alert(successMessage);
             })
@@ -63,40 +64,23 @@ function App() {
     }
   }
 
-  // const onImportButtonPressed = () => {
-  //   getModelNames()
-  //     .then((names) => {
-  //       modelNames.current = names;
-  //       setSaveResultVis(true);
-  //       importModel()
-  //       .then((layers) => {
-  //         console.log("Setting layerList state:", layers);
-  //         setLayerList([...layers]);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error importing model:", error);
-  //       });
-  //     })
-  // };
 
-  // const onImportButtonPressed = () => {
-  //   getModelNames()
-  //     .then((names) => {
-  //       setModelNames(names);
-  //       setSaveResultVis(true);
-  //       importModel()
-  //         .then((layers) => {
-  //           console.log('Setting layerList state:', layers);
-  //           setLayerList([...layers]);
-  //         })
-  //         .catch((error) => {
-  //           console.error('Error importing model:', error);
-  //         });
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error fetching model names:', error);
-  //     });
-  // };
+  const onDatasetImportStart = () =>{
+    setDataLoading(true);
+  }
+
+  async function onTrainButtonPressed() {
+    setDataLoading(true);
+    const act = await trainAndFetchWeights(selectedModel.current);
+    setDataLoading(false);
+    if (act) { // Check if 'act' is not null/undefined
+        setActivations(act);
+    } else {
+        // Handle the case where 'act' is null/undefined or invalid
+        console.error("Failed to fetch activations.");
+        // Optionally, set a state or alert the user
+    }
+}
 
   const onImportButtonPressed = async () => {
     try {
@@ -134,15 +118,11 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar onFilesSelected={onFilesSelected} onSaveButtonPressed={onSaveButtonPressed} onImportButtonPressed={onImportButtonPressed}/>
+      <Navbar onFilesSelected={onFilesSelected} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed}/>
       <div className="content">
         <ModelPanel layers = {layerList} setLayerList ={setLayerList}/>
         <div className="right_panel">
-          {/* <div className="kernel_panel" id="imageContainer">
-            <h2>Display panel</h2>
-            <h3 id="title_selected_layer"></h3>
-          </div> */}
-          <DisplayPanel dataset ={dataset}/>
+          <DisplayPanel activations = {activations} dataset ={dataset?.[0]} load = {dataLoading}/>
           <div className="graph_panel">
             <h2>Graph panel</h2>
           </div>

@@ -9,7 +9,7 @@ export default class LayerOptionsAvgPool2D extends React.Component{
     type : this.props.type,
     onClose: this.props.onClose,
     poolSize : this.props.poolSize || [2,2],
-    strides: this.props.strides || [1,1],
+    strides: this.props.strides || [2,2],
     padding: this.props.padding || this.paddingTypes[0],
     index: this.props.index,
     inputShape : this.props.inputShape || null
@@ -39,14 +39,8 @@ export default class LayerOptionsAvgPool2D extends React.Component{
         visibility: false
       });
       if (this.state.inputShape != undefined){
-        if (this.state.inputShape === "") {
-          this.setState({
-            inputShape: [32, 32]
-          }, () => {
-            this.props.onClose(this.state); // Notify the parent component about the close event after state update
-          });
-        } 
-        else {
+        
+        
             const val = this.state.inputShape.split(',');
             let arr = val.map(element => parseInt(element, 10));
             this.setState({
@@ -54,7 +48,7 @@ export default class LayerOptionsAvgPool2D extends React.Component{
             }, () => {
               this.props.onClose(this.state); // Notify the parent component about the close event after state update
           });
-          }
+          
       }
       else{
         this.props.onClose(this.state);

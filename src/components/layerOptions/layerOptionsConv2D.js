@@ -15,7 +15,7 @@ export default class LayerOptionsConv2D extends React.Component{
     strides: this.props.strides || [1,1],
     padding: this.props.padding || this.paddingTypes[0],
     index: this.props.index,
-    inputShape : this.props.inputShape || null
+    inputShape : this.props.inputShape?.join() || ""
   };
 
   selectedImage = require(`./../../images/${this.state.activationType}.png`);
@@ -61,6 +61,27 @@ export default class LayerOptionsConv2D extends React.Component{
       this.props.onClose(); // Notify the parent component about the close event
     }
   };
+
+  // handleInputShapeChange = (event) => {
+  //   const inputShapeString = event.target.value;
+  //   // Split the string into an array and convert each element to an integer.
+  //   // Filter out any non-numeric values to avoid NaN issues.
+  //   const inputShapeArray = inputShapeString.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n));
+  //   this.setState({
+  //     inputShape: inputShapeArray.length > 0 ? inputShapeArray : [32, 32] // Default value if input is invalid
+  //   });
+  // };
+  
+  // handleSubmit = () => {
+  //   if (this.state.numOfKernels !== "") {
+  //     this.setState({
+  //       visibility: false
+  //     }, () => {
+  //       // State has been updated, now call onClose with the current state.
+  //       this.props.onClose(this.state);
+  //     });
+  //   }
+  // };
 
   handleSubmit = () => {
     if(this.state.numOfKernels!= ""){
@@ -118,18 +139,18 @@ export default class LayerOptionsConv2D extends React.Component{
   }
 
   handleInputShapeChange = (event) => {
-    // if(event.target.value === "")
-    //   this.setState({
-    //     inputShape: [32,32]
-    //   });
-    // else{
-    //   const val = event.target.value.split(',');
-    //   let arr = []
-    //   val.forEach((element) => arr.push(parseInt(element,10)));
-    //   this.setState({
-    //     inputShape: arr
-    //   });
-    // }
+    if(event.target.value === "")
+      this.setState({
+        inputShape: [32,32]
+      });
+    else{
+      const val = event.target.value.split(',');
+      let arr = []
+      val.forEach((element) => arr.push(parseInt(element,10)));
+      this.setState({
+        inputShape: arr
+      });
+    }
    
     this.setState({
       inputShape: event.target.value

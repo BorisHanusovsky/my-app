@@ -8,7 +8,7 @@ import LayerOptionsDropout from "./layerOptions/layerOptionsDropout";
 import { add_model_layer, create_model } from "./../model.js";
 import { LayerType } from "./layers/layerEnum.js";
 
-const ModelPanel = ({layers, setLayerList}) => {
+const ModelPanel = ({layers, setLayerList, onIndexChange}) => {
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(null);
   const [keyIndex, setKeyIndex] = useState(layers.length);
   const [layerOptVis, setLayerOptionsVisibility] = useState(false);
@@ -82,7 +82,7 @@ const ModelPanel = ({layers, setLayerList}) => {
               type: layerType,
               index: prevKeyIndex,
               poolSize: [2,2],
-              strides: [1,1],
+              strides: [2,2],
               padding: "valid",
               isActive: false,
               inputShape : null
@@ -93,7 +93,7 @@ const ModelPanel = ({layers, setLayerList}) => {
               type: layerType,
               index: prevKeyIndex,
               poolSize: [2,2],
-              strides: [1,1],
+              strides: [2,2],
               padding: "valid",
               isActive: false,
               inputShape : null
@@ -121,6 +121,7 @@ const ModelPanel = ({layers, setLayerList}) => {
           };
       }
       setSelectedLayerIndex(newLayer.index);
+      onIndexChange()
       newLayerRef.current = newLayer;
       return prevKeyIndex + 1;
     });
@@ -138,6 +139,7 @@ const ModelPanel = ({layers, setLayerList}) => {
 
   const handleLayerClick = (index) => {
     setSelectedLayerIndex(index);
+    onIndexChange(index)
   };
 
   const handleLayerDoubleClick = (index) => {
@@ -157,6 +159,7 @@ const ModelPanel = ({layers, setLayerList}) => {
 
   const removeSelectedLayer = () => {
     setSelectedLayerIndex(null);
+    onIndexChange(null)
     if (layers.length > 0) {
       setKeyIndex((prevKeyIndex) => prevKeyIndex - 1);
       setLayerList((prevLayers) => prevLayers.slice(0, -1));
@@ -183,6 +186,7 @@ const ModelPanel = ({layers, setLayerList}) => {
                                          padding={layers?.[selectedLayerIndex]?.padding}
                                          activationType = {layers?.[selectedLayerIndex]?.activationType}
                                          vis={layerOptVis} 
+                                         inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                          onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "Dense")
       layerOptions = <LayerOptions key={layers?.[selectedLayerIndex]?.index}

@@ -102,6 +102,7 @@ export default function Navbar({
   onDatasetImportStart,
   onImportButtonPressed,
   onTrainButtonPressed,
+  onTestButtonPressed
 }) {
   const fileInputRef = useRef(null);
   const modelInputRef = useRef(null);
@@ -145,6 +146,10 @@ export default function Navbar({
     onTrainButtonPressed();
   }
 
+  function handleTestButtonPressed() {
+    onTestButtonPressed();
+  }
+
   return (
     <nav>
       <span className="nav_left">
@@ -174,7 +179,7 @@ export default function Navbar({
           Load data
         </button>
         <button onClick={handleTrainButtonPressed}>Train</button>
-        <button>Test</button>
+        <button onClick={handleTestButtonPressed}>Test</button>
       </span>
     </nav>
   );

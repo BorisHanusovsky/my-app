@@ -5,10 +5,11 @@ import './model.js';
 import ModelPanel from './components/modelPanel.js';
 import Navbar from './components/navbar.js';
 import Footer from './components/footer/footer.js';
-import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames, trainAndFetchWeights} from './model.js'
+import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames, trainAndFetchActivations,testModel} from './model.js'
 import * as tf from '@tensorflow/tfjs'
 import ModalSavedModels from './components/modals/modalSavedModels.js';
 import DisplayPanel from './components/DisplayPanel.js';
+import GraphPanel from './components/graphPanel.js';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
   const [dataset, setDataset] = useState(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [activations, setActivations] = useState([])
+  const [selectedIndex, setSelectedIndex] = useState(0)
 
   useEffect(() => {
     console.log(`Layers in app : ${layerList}`);
@@ -36,7 +38,7 @@ function App() {
         for(var i = 0; i< layerList.length; i++)
           add_model_layer(layerList[i]);
         if (compileModel() === true){
-          selectedModel.current =  window.prompt("Name your model","MyModel");
+          selectedModel.current =  window.prompt("Name your model",selectedModel.current);
           if(selectedModel.current !== null){
             saveModel(selectedModel.current)
             .then((successMessage) => {
@@ -71,7 +73,7 @@ function App() {
 
   async function onTrainButtonPressed() {
     setDataLoading(true);
-    const act = await trainAndFetchWeights(selectedModel.current);
+    const act = await trainAndFetchActivations(selectedModel.current);
     setDataLoading(false);
     if (act) { // Check if 'act' is not null/undefined
         setActivations(act);
@@ -80,7 +82,11 @@ function App() {
         console.error("Failed to fetch activations.");
         // Optionally, set a state or alert the user
     }
-}
+  }
+ 
+  const onTestButtonPressed = () =>{
+    testModel(selectedModel,activations);
+  }
 
   const onImportButtonPressed = async () => {
     try {
@@ -116,16 +122,21 @@ function App() {
     }
 }
 
+function onIndexChange(index){
+  if(selectedIndex == null)
+    setSelectedIndex(0)
+  else setSelectedIndex(index)
+}
+
   return (
     <div className="App">
-      <Navbar onFilesSelected={onFilesSelected} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed}/>
+      <Navbar onFilesSelected={onFilesSelected} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed}/>
       <div className="content">
-        <ModelPanel layers = {layerList} setLayerList ={setLayerList}/>
-        <div className="right_panel">
-          <DisplayPanel activations = {activations} dataset ={dataset?.[0]} load = {dataLoading}/>
-          <div className="graph_panel">
-            <h2>Graph panel</h2>
-          </div>
+        <ModelPanel layers = {layerList} setLayerList ={setLayerList} onIndexChange ={onIndexChange}/>
+        <div className="right_panel">                   
+                                                           {/*  epocha(asi max 7), vrstva, obrazok(10)                  */}
+          <DisplayPanel activations = {activations?.activations?.[6][selectedIndex][0] } position = {0} imgs = {activations.images}  load = {dataLoading}/>
+          <GraphPanel history ={activations.history}></GraphPanel>
         </div>
       </div>
       <Footer/>

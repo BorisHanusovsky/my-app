@@ -38,7 +38,11 @@ button{
   width: 100px;
   border-radius: 5px;
   background-color: #DDF2FD;
-  
+  margin-top: 5px;  
+}
+button:hover{
+  background-color: #F2545B;
+  cursor: pointer;
 }
 .content{
   background-color: #164863;
@@ -79,8 +83,7 @@ button{
 .kernel_panel{
   grid-row: 1/2;
   background-color: #19323C;
-  overflow: hidden;
-  overflow-y: scroll;
+  overflow: auto;
   max-height: 550px;
   color: #DDF2FD;
 }

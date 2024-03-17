@@ -35,26 +35,6 @@ const app = firebase.initializeApp({
     }
   }
 
-//   const eventSource = new EventSource("/events");
-
-//   eventSource.onmessage = function(event) {
-//     const data = JSON.parse(event.data);
-//     console.log(data);
-//     const messagesDiv = document.getElementById('messages');
-//     messagesDiv.innerHTML += `<p>${data.message} at ${data.timestamp}</p>`;
-// };
-
-// eventSource.onerror = function(error) {
-//     console.error("EventSource failed:", error);
-//     eventSource.close();
-// };
-
-//   onMessage(messaging, (payload) => {
-//     console.log('Message received. ', payload);
-//     alert("yo")
-//     // Display notification or perform an action based on the payload
-// });
-
 export async function downloadModel(modelName) {
     const storageRef = firebase.storage().ref();
     
@@ -149,36 +129,79 @@ export async function saveModel(modelName) {
   }
 }
 
-export async function trainAndFetchWeights(modelName) {
+export async function preprocessData(rawData) {
+  // Example preprocessing: normalize image data to [0, 1]
+  return tf.div(tf.tensor4d(rawData), 255);
+}
+
+// export async function predictModel(model, data) {
+//   const processedData = await preprocessData(data.images);
+//   const predictions = model.predict(processedData);
+//   // Optionally, process predictions here (e.g., decode the output)
+//   return predictions;
+// }
+
+// export function getModelActivations(model, layerNames) {
+//   // Create a new model that outputs activations from intermediate layers
+//   const outputs = layerNames.map(name => model.getLayer(name).output);
+//   const activationModel = tf.model({inputs: model.input, outputs});
+//   return activationModel;
+// }
+
+// export async function generateActivationMaps(modelName, data) {
+//   await downloadModel(modelName);
+//   // Assuming 'model' is now the loaded model
+  
+
+//   const processedData = await preprocessData(data.images[0]); // Process a single image
+//   const activations = activationModel.predict(processedData);
+
+//   // 'activations' now contains the activation maps from the specified layers
+//   // You can process or visualize these as needed
+//   return activations;
+// }
+
+export async function testModel(modelName, data){
+  await downloadModel(modelName);
+  model.predict(tf.tensor4d(data.images[0]), data.labels[0] );
+}
+
+export async function trainAndFetchActivations(modelName) {
   try {
     if (!modelName) { // Assuming you meant to check modelName here
       alert("No model defined");
       return;
     }
-    await trainModel(modelName); // Make sure this function handles errors/exceptions appropriately
-    await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
-    const activations = await fetchWeights(); // This should correctly fetch or return null/undefined on failure
-    return activations; // This could be null/undefined if fetching failed
+    const training = await trainModel(modelName);
+    if (training){
+      // Make sure this function handles errors/exceptions appropriately
+      await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
+      const activations = await fetchActivations(); // This should correctly fetch or return null/undefined on failure
+      return activations; // This could be null/undefined if fetching failed
+    }
+   
   } catch (error) {
     console.error("An error occurred during training or fetching weights:", error);
     // Handle the error, possibly by alerting the user or updating the state
     return null; // Ensure the caller knows an error occurred
   }
 }
-
-
-const ip = '34.141.235.116'
+const ip = '35.204.106.241'
 
 export async function trainModel(modelName) {
-  
-  const response = await fetch(`http://${ip}:5000/train`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({'dir': modelName})
-      });
-      console.log(response)
+  try {
+    await fetch(`http://${ip}:5000/train`, {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({'dir': modelName})
+    });
+    return true;
+  } catch (error) {
+    alert('Server not running');
+    return false;
+  }
 }
 
 async function waitForTrainingToComplete() {
@@ -195,9 +218,10 @@ async function waitForTrainingToComplete() {
 
 async function checkTrainingStatus() {
   try {
-    // Assuming `/status` is an endpoint that returns the training status
     const response = await fetch(`http://${ip}:5000/status`);
     const statusData = await response.json();
+    const train_acc = statusData.trainAccuracy;
+    const val_acc = statusData.valAccuracy;
     if (statusData.status === 'completed') {
       console.log("Training completed1");
       trainingCompleted = true
@@ -212,25 +236,28 @@ async function checkTrainingStatus() {
   }
 }
 
-async function fetchWeights() {
-  try {
-    const response = await fetch(`http://${ip}:5000/activations`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch weights');
-    }
-    const weightsData = await response.json();
-    console.log('Weights:', weightsData);
-    return weightsData.activations
-    // Handle the weights data (e.g., load the model with these weights)
-  } catch (error) {
-    console.error('Error fetching weights:', error.message);
-    throw error;
-  }
+async function fetchActivations() {
+  return new Promise((resolve, reject) => {
+    fetch(`http://${ip}:5000/activations`)
+      .then(response => response.json())
+      .then(data => {
+        console.log('Images:', data.images);
+        console.log('Labels:', data.labels);
+        console.log('Activations:', data.activations);
+        console.log('History:', data.history);
+        
+        let firstImage = data.images[0];
+        let firstLabel = data.labels[0];
+        console.log('First image data:', firstImage);
+        console.log('First label:', firstLabel);
+        resolve(data); // Resolve the promise with the fetched data
+      })
+      .catch(error => {
+        console.error('Error fetching or parsing the JSON file:', error);
+        reject(error); // Reject the promise if an error occurs
+      });
+  });
 }
-
-
-
-
 
 export async function importModel(modelName) {
     try {
@@ -254,7 +281,7 @@ export function add_model_layer(layer) {
             nlayer = tf.layers.dense({ units: layer.numOfNeurons, activation: layer.activationType, batchInputShape: layer.inputShape});
             break;
         case LayerType.CONV:
-            nlayer = tf.layers.conv2d({ filters: layer.numOfKernels, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activation: layer.activationType,batchInputShape: layer.inputShape});
+            nlayer = tf.layers.conv2d({ filters: layer.numOfKernels, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activation: layer.activationType, batchInputShape: layer.inputShape});
             break;
         case LayerType.MAXP:
             nlayer = tf.layers.maxPool2d({poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding,batchInputShape: layer.inputShape});
@@ -276,8 +303,6 @@ export function add_model_layer(layer) {
     catch(err){
       alert(`❌❌ Layer could not be added to model❌❌\n ${err}`);
     }
-   
-    console.log(model);
 }
 
 function model_to_layers() {
@@ -288,21 +313,22 @@ function model_to_layers() {
     let layers = [];
     let i = 0;
     model.layers.forEach(layer => {
+        let shape = i === 0 ? layer.batchInputShape : undefined
         switch(layer.constructor.className){
             case LayerType.DENSE:
-                layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, inputShape : layer.batchInputShape});
+                layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, inputShape : shape});
                 i++;
                 break;
             case LayerType.CONV:
-                layers.push({index : i, type : LayerType.CONV, numOfKernels : layer.filters, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activationType: layer.activation.constructor.className, inputShape : layer.batchInputShape})
+                layers.push({index : i, type : LayerType.CONV, numOfKernels : layer.filters, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activationType: layer.activation.constructor.className, inputShape : shape})
                 i++;
                 break;
             case 'MaxPooling2D':
-                layers.push({index : i, type : LayerType.MAXP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : layer.batchInputShape})
+                layers.push({index : i, type : LayerType.MAXP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : shape})
                 i++;
                 break;
             case 'AveragePooling2D':
-                layers.push({index : i, type : LayerType.AVGP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : layer.batchInputShape})
+                layers.push({index : i, type : LayerType.AVGP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : shape})
                 i++;
                 break;
             case LayerType.DROP:

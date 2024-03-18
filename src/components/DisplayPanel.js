@@ -1,13 +1,21 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { ClimbingBoxLoader } from 'react-spinners';
 
 export default function DisplayPanel({activations, imgs, load, position = 0 }) {
   const canvasRef = useRef();
-  const images = activations
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  let images = activations?.[selectedImageIndex]
 
+  
+  function handleOnClick(){
+    if(selectedImageIndex == 9)
+      setSelectedImageIndex(0)
+    else
+    setSelectedImageIndex(selectedImageIndex +1)
+  }
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas && images?.length > 0) {
+    if (canvas && activations && images?.length > 0) {
       const ctx = canvas.getContext('2d');
       const scaleFactor = 4; // Adjust as needed for visibility
       let numRows, numCols, size, paddedSize, gap;
@@ -96,11 +104,12 @@ export default function DisplayPanel({activations, imgs, load, position = 0 }) {
         }
       });
     }
-  }, [imgs, load, position,activations]);
+  }, [imgs, load, position,activations,selectedImageIndex]);
 
   return (
     <div className="kernel_panel" id="imageContainer">
       <h2>Display panel</h2>
+      <button onClick={handleOnClick}> Change image</button>
       <canvas ref={canvasRef} style={{ display: load ? 'none' : 'block' }}></canvas>
       <ClimbingBoxLoader loading={load} size={30} color="#DDF2FD" style={{ position: 'relative', display: 'flex', justifyContent: 'center', top: '40%' }}/>
     </div>

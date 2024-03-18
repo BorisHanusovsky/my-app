@@ -135,7 +135,7 @@ function onIndexChange(index){
         <ModelPanel layers = {layerList} setLayerList ={setLayerList} onIndexChange ={onIndexChange}/>
         <div className="right_panel">                   
                                                            {/*  epocha(asi max 7), vrstva, obrazok(10)                  */}
-          <DisplayPanel activations = {activations?.activations?.[6][selectedIndex][0] } position = {0} imgs = {activations.images}  load = {dataLoading}/>
+          <DisplayPanel activations = {activations?.activations?.[0][selectedIndex] } position = {0} imgs = {activations.images}  load = {dataLoading}/>
           <GraphPanel history ={activations.history}></GraphPanel>
         </div>
       </div>

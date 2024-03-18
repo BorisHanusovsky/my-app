@@ -186,7 +186,8 @@ export async function trainAndFetchActivations(modelName) {
     return null; // Ensure the caller knows an error occurred
   }
 }
-const ip = '34.141.198.60'
+//const ip = '34.141.198.60'
+const ip = process.env.IP
 
 export async function trainModel(modelName) {
   try {

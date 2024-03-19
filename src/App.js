@@ -10,45 +10,54 @@ import * as tf from '@tensorflow/tfjs'
 import ModalSavedModels from './components/modals/modalSavedModels.js';
 import DisplayPanel from './components/DisplayPanel.js';
 import GraphPanel from './components/graphPanel.js';
+import ModalDatasetSelect from './components/modals/modalDatasetSelect.js';
+import ModalLayerTypes from './components/modals/modalLayerTypes.js';
+import { LayerType } from "./components/layers/layerEnum";
 
 
 function App() {
   let [layerList, setLayerList] = useState([]);
   const [saveResultVis, setSaveResultVis] = useState(false);
+  const [datasetResultVis, setDatasetResultVis] = useState(false);
+  const [layerTypesVis, setLayerTypesVis] = useState(false)
   const selectedModel = useRef(null);
   const [modelNames, setModelNames] = useState([]);
-  const [dataset, setDataset] = useState(null);
   const [dataLoading, setDataLoading] = useState(false);
   const [activations, setActivations] = useState([])
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedDataset, setSelectedDataset] = useState('MNIST')
 
   useEffect(() => {
-    console.log(`Layers in app : ${layerList}`);
+    console.log(`Layers in app :`);
+    console.log(layerList)
   },[layerList]);
   
-  const onFilesSelected = (files) =>{
-    //displayImages(files)
-    setDataset(files);
-  }
+
 
   const onSaveButtonPressed = () =>{
     if (layerList){
       if (layerList.length!== 0){
         createModel();
-        for(var i = 0; i< layerList.length; i++)
-          add_model_layer(layerList[i]);
-        if (compileModel() === true){
-          selectedModel.current =  window.prompt("Name your model",selectedModel.current);
-          if(selectedModel.current !== null){
-            saveModel(selectedModel.current)
-            .then((successMessage) => {
-              alert(successMessage);
-            })
-            .catch((errorMessage) => {
-              alert(errorMessage);
-            });
+        try{
+          for(var i = 0; i< layerList.length; i++)
+            add_model_layer(layerList[i]);
+          if (compileModel() === true){
+            selectedModel.current =  window.prompt("Name your model",selectedModel.current === null? "MyModel" : selectedModel.current);
+            if(selectedModel.current !== null){
+              saveModel(selectedModel.current)
+              .then((successMessage) => {
+                alert(successMessage);
+              })
+              .catch((errorMessage) => {
+                alert(errorMessage);
+              });
+            }
           }
         }
+        catch(err){
+          alert(`❌❌ Error occured while creating model❌❌\n ${err}`);
+        }
+        
       }
       else{
         alert("❌❌ Failed saving model, model does not have layers defined ❌❌");
@@ -67,13 +76,14 @@ function App() {
   }
 
 
+
   const onDatasetImportStart = () =>{
     setDataLoading(true);
   }
 
   async function onTrainButtonPressed() {
     setDataLoading(true);
-    const act = await trainAndFetchActivations(selectedModel.current);
+    const act = await trainAndFetchActivations(selectedModel.current, selectedDataset);
     setDataLoading(false);
     if (act) { // Check if 'act' is not null/undefined
         setActivations(act);
@@ -83,6 +93,110 @@ function App() {
         // Optionally, set a state or alert the user
     }
   }
+
+  const onDatasetClicked = () =>{
+    setDatasetResultVis(true);
+  }
+
+  const onDatasetClose =(dataset)=>{
+    setDatasetResultVis(false);
+    if (dataset !== null)
+      setSelectedDataset(dataset)
+  }
+
+  const onModalLayerTypesClose = (layerType)=>{
+    if (layerType !== null)
+      addLayer(layerType)
+    else 
+      setLayerTypesVis(false)
+  }
+
+  const onButtonPlusClick = () =>{
+    setLayerTypesVis(true)
+  }
+
+  const onButtonMinusClick = () =>{
+    if (layerList.length > 0) {
+      setLayerList((prevLayers) => prevLayers.slice(0, -1));
+      setSelectedIndex(layerList.length - 1)
+    }
+    else{
+      setSelectedIndex(null)
+    }
+  }
+
+  const addLayer = (layerType) => {
+      let newLayer;
+      switch (layerType) {
+        case 'Dense':
+          newLayer = {
+            type: layerType,
+            index: layerList.length,
+            numOfNeurons: 16, 
+            isActive: false,
+            activationType: "linear",
+            inputShape : null
+          };
+          break;
+        case 'Conv2D':
+            newLayer = {
+              type: layerType,
+              index: layerList.length,
+              numOfKernels: 16,
+              kernelSize: [3,3],
+              strides: [1,1],
+              padding: "valid",
+              isActive: false,
+              activationType: "linear",
+              inputShape : null
+            };
+            break;
+        case 'MaxPool2D':
+            newLayer = {
+              type: layerType,
+              index: layerList.length,
+              poolSize: [2,2],
+              strides: [2,2],
+              padding: "valid",
+              isActive: false,
+              inputShape : null
+            };
+            break;  
+        case 'AvgPool2D':
+            newLayer = {
+              type: layerType,
+              index: layerList.length,
+              poolSize: [2,2],
+              strides: [2,2],
+              padding: "valid",
+              isActive: false,
+              inputShape : null
+            };
+            break;  
+        case 'Dropout':
+            newLayer = {
+              type: layerType,
+              index: layerList.length,
+              isActive: false,
+              rate: 0.5,
+            };
+            break;  
+        case 'Flatten':
+            newLayer = {
+              type: layerType,
+              index: layerList.length,
+              isActive: false,
+            };
+            break;  
+        default:
+          newLayer = {
+            type: layerType,
+            index: layerList.length,
+          };
+      }
+      setLayerList(prevLayers => [...prevLayers, newLayer])
+      setSelectedIndex(layerList.length > 0 ? layerList.length - 1 : null)
+      };
  
   const onTestButtonPressed = () =>{
     testModel(selectedModel,activations);
@@ -105,23 +219,6 @@ function App() {
     }
   };
 
-  function displayImages(files) {
-    let imageContainer = document.getElementById("imageContainer")
-    imageContainer.innerHTML = '';
-
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        var reader = new FileReader();
-        reader.onload = function (e) {
-            var img = document.createElement('img');
-            img.classList.add('dataImage');
-            img.src = e.target.result;
-            imageContainer.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-    }
-}
-
 function onIndexChange(index){
   if(selectedIndex == null)
     setSelectedIndex(0)
@@ -130,9 +227,9 @@ function onIndexChange(index){
 
   return (
     <div className="App">
-      <Navbar onFilesSelected={onFilesSelected} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed}/>
+      <Navbar selectedDataset = {selectedDataset} onDatasetClicked = {onDatasetClicked} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed}/>
       <div className="content">
-        <ModelPanel layers = {layerList} setLayerList ={setLayerList} onIndexChange ={onIndexChange}/>
+        <ModelPanel onButtonPlusClick= {onButtonPlusClick} onButtonMinusClick= {onButtonMinusClick} layers = {layerList} setLayerList ={setLayerList} onIndexChange ={onIndexChange}/>
         <div className="right_panel">                   
                                                            {/*  epocha(asi max 7), vrstva, obrazok(10)                  */}
           <DisplayPanel activations = {activations?.activations?.[0][selectedIndex] } position = {0} imgs = {activations.images}  load = {dataLoading}/>
@@ -149,6 +246,8 @@ function onIndexChange(index){
       </div>
 
       <ModalSavedModels visibility = {saveResultVis} onModalSavedModelClose = {onModalSavedModelClose} modelNames = {modelNames}/>
+      <ModalDatasetSelect visibility = {datasetResultVis} onDatasetClose = {onDatasetClose}/>
+      <ModalLayerTypes visibility={layerTypesVis} onModalLayerTypesClose = {onModalLayerTypesClose} layerTypes = {Object.values(LayerType)}/>
     </div>
   );
 }

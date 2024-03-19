@@ -8,124 +8,25 @@ import LayerOptionsDropout from "./layerOptions/layerOptionsDropout";
 import { add_model_layer, create_model } from "./../model.js";
 import { LayerType } from "./layers/layerEnum.js";
 
-const ModelPanel = ({layers, setLayerList, onIndexChange}) => {
+const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onButtonMinusClick}) => {
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(null);
-  const [keyIndex, setKeyIndex] = useState(layers.length);
+  const [keyIndex, setKeyIndex] = useState(0);
   const [layerOptVis, setLayerOptionsVisibility] = useState(false);
-  const newLayerRef = useRef(null);
+  let newLayerRef = useRef(null);
 
-  // useEffect(() => {
-  //   setLayerList(layers);
-  // }, [layers, setLayerList]);
-  
+  useEffect(() => {
+    console.log(layers)}, [layers, setLayerList]);
 
 
-  const openLayerOptions = () => {
-    let modal = document.getElementById("myModal");
-    let modalLayers = document.getElementById("modal_layers");
-    var span = document.getElementsByClassName("close")[0];
-    modal.style.display = "block";
-  
-    span.onclick = function () {
-      modal.style.display = "none";
-      modalLayers.innerHTML = '';
-    };
-  
-    modalLayers.innerHTML = '';
-  
-  const layerTypesArray = Object.values(LayerType);
-    for (let dir of layerTypesArray) {
-      let element = document.createElement("button");
-      element.classList.add('layer_button');
-      element.textContent = dir;
-      element.setAttribute("layer_type", dir);
-  
-      element.removeEventListener('click', () => addLayer(dir));
-      element.addEventListener('click', () => addLayer(dir));
-      
-      modalLayers.appendChild(element);
-    }
-  };
+
+  const openLayerOptions = () =>{
+    setLayerOptionsVisibility(true)
+  }
 
   console.log("ModelPanel component rendered");
   console.log(selectedLayerIndex, keyIndex);
 
-  const addLayer = (layerType) => {
-    setKeyIndex((prevKeyIndex) => {
-      let newLayer;
-      switch (layerType) {
-        case 'Dense':
-          newLayer = {
-            type: layerType,
-            index: prevKeyIndex,
-            numOfNeurons: 16, 
-            isActive: false,
-            activationType: "linear",
-            inputShape : null
-          };
-          break;
-        case 'Conv2D':
-            newLayer = {
-              type: layerType,
-              index: prevKeyIndex,
-              numOfKernels: 16,
-              kernelSize: [3,3],
-              strides: [1,1],
-              padding: "valid",
-              isActive: false,
-              activationType: "linear",
-              inputShape : null
-            };
-            break;
-        case 'MaxPool2D':
-            newLayer = {
-              type: layerType,
-              index: prevKeyIndex,
-              poolSize: [2,2],
-              strides: [2,2],
-              padding: "valid",
-              isActive: false,
-              inputShape : null
-            };
-            break;  
-        case 'AvgPool2D':
-            newLayer = {
-              type: layerType,
-              index: prevKeyIndex,
-              poolSize: [2,2],
-              strides: [2,2],
-              padding: "valid",
-              isActive: false,
-              inputShape : null
-            };
-            break;  
-        case 'Dropout':
-            newLayer = {
-              type: layerType,
-              index: prevKeyIndex,
-              isActive: false,
-              rate: 0.5,
-            };
-            break;  
-        case 'Flatten':
-            newLayer = {
-              type: layerType,
-              index: prevKeyIndex,
-              isActive: false,
-            };
-            break;  
-        default:
-          newLayer = {
-            type: layerType,
-            index: prevKeyIndex,
-          };
-      }
-      setSelectedLayerIndex(newLayer.index);
-      onIndexChange()
-      newLayerRef.current = newLayer;
-      return prevKeyIndex + 1;
-    });
-  };
+
 
   useEffect(() => {
     if (newLayerRef.current !== null && selectedLayerIndex !== null) {
@@ -135,11 +36,16 @@ const ModelPanel = ({layers, setLayerList, onIndexChange}) => {
         return updatedLayers;
       });
     }
-  }, [selectedLayerIndex, setLayerList]);
+  }, [setLayerList,newLayerRef,selectedLayerIndex]); // selectedLayerIndex
+
+  // const handleLayerClick = (index) => {
+  //   setSelectedLayerIndex(index);
+  //   onIndexChange(index)
+  // };
 
   const handleLayerClick = (index) => {
     setSelectedLayerIndex(index);
-    onIndexChange(index)
+    onIndexChange(index); // Assuming onIndexChange is a prop function for notifying parent components
   };
 
   const handleLayerDoubleClick = (index) => {
@@ -157,17 +63,17 @@ const ModelPanel = ({layers, setLayerList, onIndexChange}) => {
     }
   };
 
-  const removeSelectedLayer = () => {
-    setSelectedLayerIndex(null);
-    onIndexChange(null)
-    if (layers.length > 0) {
-      setKeyIndex((prevKeyIndex) => prevKeyIndex - 1);
-      setLayerList((prevLayers) => prevLayers.slice(0, -1));
-    }
-    else{
-      setKeyIndex(0);
-    }
-  };
+  // const removeSelectedLayer = () => {
+  //   setSelectedLayerIndex(null);
+  //   onIndexChange(null)
+  //   if (layers.length > 0) {
+  //     setKeyIndex((prevKeyIndex) => prevKeyIndex - 1);
+  //     setLayerList((prevLayers) => prevLayers.slice(0, -1));
+  //   }
+  //   else{
+  //     setKeyIndex(0);
+  //   }
+  // };
 
   useEffect(() => {
    setKeyIndex(layers.length);
@@ -228,21 +134,33 @@ const ModelPanel = ({layers, setLayerList, onIndexChange}) => {
   return (
    
     <div className="model_panel">
+      <h2>Model panel</h2>
       <div className="model_panel_controls">
-        <button className = "sticky" onClick={openLayerOptions}>+</button>
-        <button className = "sticky" onClick={removeSelectedLayer}>-</button>
+        <button className = "sticky" onClick={onButtonPlusClick}>+</button>
+        <button className = "sticky" onClick={onButtonMinusClick}>-</button>
         <button className = "sticky" onClick={handleLayerDoubleClick}>Change </button>
       </div>
-      <h2>Model panel</h2>
-      {layers.map((layer) => (
-        <LayerFactory
-        key={layer.index}
-        layer={layer}
-        handleLayerClick={handleLayerClick}
-        handleLayerDoubleClick={handleLayerDoubleClick}
-        isActive = {layer.index === selectedLayerIndex ? true : false}
-      />
-      ))}
+      
+      {/* {layers.filter(layer => layer != null).map((layer) => (
+  <LayerFactory
+    key={layer.index}
+    layer={layer}
+    handleLayerClick={handleLayerClick}
+    handleLayerDoubleClick={handleLayerDoubleClick}
+    isActive={layer?.index === selectedLayerIndex}
+  />
+))} */}
+
+{ 
+layers.filter(layer => layer != null).map((layer, index) => (
+  <LayerFactory
+    key={index}
+    layer={layer}
+    handleLayerClick={handleLayerClick}
+    handleLayerDoubleClick={handleLayerDoubleClick}
+    isActive={index === selectedLayerIndex}
+  />
+))}
       {layerOptions}
     </div>
   );

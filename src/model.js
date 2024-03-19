@@ -166,13 +166,17 @@ export async function testModel(modelName, data){
   model.predict(tf.tensor4d(data.images[0]), data.labels[0] );
 }
 
-export async function trainAndFetchActivations(modelName) {
+export async function trainAndFetchActivations(modelName, dataset) {
   try {
     if (!modelName) { // Assuming you meant to check modelName here
-      alert("No model defined");
+      alert("Save the model first");
       return;
     }
-    const training = await trainModel(modelName);
+    if (!dataset) { 
+      alert("No dataset defined");
+      return;
+    }
+    const training = await trainModel(modelName,dataset);
     if (training){
       // Make sure this function handles errors/exceptions appropriately
       await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
@@ -186,17 +190,17 @@ export async function trainAndFetchActivations(modelName) {
     return null; // Ensure the caller knows an error occurred
   }
 }
-//const ip = '34.141.198.60'
-const ip = process.env.IP
+const ip = '34.141.192.44'
+//const ip = process.env.IP
 
-export async function trainModel(modelName) {
+export async function trainModel(modelName,dataset) {
   try {
     await fetch(`http://${ip}:5000/train`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({'dir': modelName})
+      body: JSON.stringify({'dir': modelName, 'dataset' : dataset})
     });
     return true;
   } catch (error) {
@@ -276,7 +280,7 @@ export function add_model_layer(layer) {
         return;
     }
     let nlayer;
-    try{
+    
       switch (layer.type) {
         case LayerType.DENSE:
             nlayer = tf.layers.dense({ units: layer.numOfNeurons, activation: layer.activationType, batchInputShape: layer.inputShape});
@@ -301,10 +305,7 @@ export function add_model_layer(layer) {
     }
     model.add(nlayer)
     }
-    catch(err){
-      alert(`❌❌ Layer could not be added to model❌❌\n ${err}`);
-    }
-}
+    
 
 function model_to_layers() {
     if (typeof tf === 'undefined') {

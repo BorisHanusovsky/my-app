@@ -4,6 +4,5 @@ export const LayerType = {
     MAXP: 'MaxPool2D',
     AVGP: 'AvgPool2D',
     DROP: 'Dropout',
-    FLATTEN: 'Flatten',
-    TEST3: 'test3'
+    FLATTEN: 'Flatten'
   };

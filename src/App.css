@@ -21,6 +21,10 @@ html{
 nav{
   background-color: #427D9D;
   grid-column: 1/4;
+  color: #DDF2FD;
+}
+h1{
+  font-size: 3vh;
 }
 .nav_left{
   width: 50%;
@@ -56,9 +60,9 @@ button:hover{
   background-color: #19323C;
   overflow-y: auto;
   color: #DDF2FD;
+  padding: 5px;
 }
 .model_panel h2{
-  margin: 10px;
 }
 .layer{
   margin: auto;

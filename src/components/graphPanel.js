@@ -42,8 +42,8 @@ export default function GraphPanel({ history }) {
     <div className='graph_panel' style={{ overflow: 'auto' }}>
       <h2>Graph panel</h2>
       <div>
-        <button onClick={handleAccuracyClicked}>Accuracy</button>
-        <button onClick={handleLossClicked}>Loss</button>
+        <button style={history?.accuracy ? { visibility:'visible'} : {visibility : 'collapse'}} onClick={handleAccuracyClicked}>Accuracy</button>
+        <button style={history?.accuracy ? { visibility:'visible'} : {visibility : 'collapse'}} onClick={handleLossClicked}>Loss</button>
         {graphs.length > 0 && (
           <LineChart
             onAxisClick={(event, d) => setAxisData(d)}

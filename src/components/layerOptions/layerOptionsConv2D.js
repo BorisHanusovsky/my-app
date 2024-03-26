@@ -72,45 +72,45 @@ export default class LayerOptionsConv2D extends React.Component{
   //   });
   // };
   
-  handleSubmit = () => {
-    if (this.state.numOfKernels !== "") {
-      this.setState({
-        visibility: false
-      }, () => {
-        // State has been updated, now call onClose with the current state.
-        this.props.onClose(this.state);
-      });
-    }
-  };
-
   // handleSubmit = () => {
-  //   if(this.state.numOfKernels!= ""){
+  //   if (this.state.numOfKernels !== "") {
   //     this.setState({
   //       visibility: false
-  //     });
-  //     if (this.state.inputShape != undefined){
-  //       if (this.state.inputShape === "") {
-  //         this.setState({
-  //           inputShape: [32, 32]
-  //         }, () => {
-  //           this.props.onClose(this.state); // Notify the parent component about the close event after state update
-  //         });
-  //       } 
-  //       else {
-  //           const val = this.state.inputShape.split(',');
-  //           let arr = val.map(element => parseInt(element, 10));
-  //           this.setState({
-  //             inputShape: arr
-  //           }, () => {
-  //             this.props.onClose(this.state); // Notify the parent component about the close event after state update
-  //         });
-  //         }
-  //     }
-  //     else{
+  //     }, () => {
+  //       // State has been updated, now call onClose with the current state.
   //       this.props.onClose(this.state);
-  //     }
+  //     });
   //   }
   // };
+
+  handleSubmit = () => {
+    if(this.state.numOfKernels!= ""){
+      this.setState({
+        visibility: false
+      });
+      if (this.state.inputShape != undefined){
+        if (this.state.inputShape === "") {
+          this.setState({
+            inputShape: [32, 32]
+          }, () => {
+            this.props.onClose(this.state); // Notify the parent component about the close event after state update
+          });
+        } 
+        else {
+            const val = this.state.inputShape.split(',');
+            let arr = val.map(element => parseInt(element, 10));
+            this.setState({
+              inputShape: arr
+            }, () => {
+              this.props.onClose(this.state); // Notify the parent component about the close event after state update
+          });
+          }
+      }
+      else{
+        this.props.onClose(this.state);
+      }
+    }
+  };
 
   handleLayerNumChange = (event) => {
     if(event.target.value === "")

@@ -1,16 +1,27 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState} from 'react';
 
 export default function Navbar({
   onFilesSelected,
   onSaveButtonPressed,
   onImportButtonPressed,
+  onExportButtonPressed,
   onTrainButtonPressed,
   onTestButtonPressed,
   onDatasetClicked,
-  selectedDataset
+  selectedDataset,
+  accountImage,
+  onLoginButtonPressed
 }) {
   const fileInputRef = useRef(null);
   const modelInputRef = useRef(null);
+  const [buttonText,setButtonText] = useState('Log in')
+
+  useEffect(() =>{
+    if (accountImage === undefined)  
+      setButtonText('Log in')
+    else
+      setButtonText('Log out')}
+    ,[accountImage])
 
   async function handleDatasetClicked() {
     onDatasetClicked()
@@ -39,6 +50,11 @@ export default function Navbar({
     onImportButtonPressed();
   }
 
+  function handleExportModel() {
+    //modelInputRef.current.click();
+    onExportButtonPressed();
+  }
+
   function handleTrainButtonPressed() {
     onTrainButtonPressed();
   }
@@ -47,13 +63,22 @@ export default function Navbar({
     onTestButtonPressed();
   }
 
+  function handleLoginButtonPressed(){
+    if (buttonText === 'Log in')
+      onLoginButtonPressed(false);
+    else
+      onLoginButtonPressed(true);
+  }
+
   return (
     <nav style={{padding : '5px'}}>
+      <span style={{float: 'left'}}>
       <h1> <span style={{color: '#F2545B'}}>NN</span> visualizer</h1>
       <h2>Selected dataset: {selectedDataset}</h2>
 
       <span className="nav_left">
         <button onClick={handleImportModel}>Import model</button>
+        <button onClick={handleExportModel}>Export model</button>
         <button onClick={handleSaveModel}>Save model</button>
       </span>
       <span className="nav_right">
@@ -77,8 +102,14 @@ export default function Navbar({
         />
         <button id="loadDataButton" onClick={handleDatasetClicked}>Dataset</button>
         <button onClick={handleTrainButtonPressed}>Train</button>
-        <button onClick={handleTestButtonPressed}>Test</button>
+        {/* <button onClick={handleTestButtonPressed}>Test</button> */}
       </span>
+      </span>
+      <span style={{float : 'right'}}>
+        <button onClick={handleLoginButtonPressed}>{buttonText}</button>
+        <img src={accountImage} style={{borderRadius : '50%', height:'40px'}}></img>
+      </span>
+      
     </nav>
   );
 }

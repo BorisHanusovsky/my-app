@@ -12,15 +12,15 @@ export default class LayerOptionsDropout extends React.Component{
 
   componentDidUpdate(prevProps) {
     // Check if the numOfKernels prop has changed
-    if (prevProps.numOfKernels !== this.props.numOfKernels) {
+    if (prevProps.rate!== this.props.rate) {
       this.setState({
-        numOfKernels: this.props.numOfKernels || 1
+        rate: this.props.rate || 0.5
       });
     }
   }
 
   handleClose = () => {
-    if(this.state.numOfKernels != ""){
+    if(this.state.rate!= ""){
       this.setState({
         visibility: false
       });
@@ -29,7 +29,7 @@ export default class LayerOptionsDropout extends React.Component{
   };
 
   handleSubmit = () => {
-    if(this.state.numOfKernels!= ""){
+    if(this.state.rate!= ""){
       this.setState({
         visibility: false
       });

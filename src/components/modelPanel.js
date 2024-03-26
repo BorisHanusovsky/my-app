@@ -7,6 +7,7 @@ import LayerOptionsAvgPool2D from "./layerOptions/layerOptionsAvgPool2D";
 import LayerOptionsDropout from "./layerOptions/layerOptionsDropout";
 import { add_model_layer, create_model } from "./../model.js";
 import { LayerType } from "./layers/layerEnum.js";
+import LayerOptionsflatten from "./layerOptions/layerOptionsFlatten.js";
 
 const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onButtonMinusClick}) => {
   const [selectedLayerIndex, setSelectedLayerIndex] = useState(null);
@@ -101,6 +102,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                    numOfNeurons={layers?.[selectedLayerIndex]?.numOfNeurons} 
                                    activationType = {layers?.[selectedLayerIndex]?.activationType}
                                    vis={layerOptVis} 
+                                   inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                    onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "MaxPool2D")
     layerOptions = <LayerOptionsMaxPool2D key={layers?.[selectedLayerIndex]?.index}
@@ -110,6 +112,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                       strides={layers?.[selectedLayerIndex]?.strides}
                                       padding={layers?.[selectedLayerIndex]?.padding}
                                       vis={layerOptVis} 
+                                      inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                       onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "AvgPool2D")
     layerOptions = <LayerOptionsAvgPool2D key={layers?.[selectedLayerIndex]?.index}
@@ -119,6 +122,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                       strides={layers?.[selectedLayerIndex]?.strides}
                                       padding={layers?.[selectedLayerIndex]?.padding}
                                       vis={layerOptVis} 
+                                      inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                       onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "Dropout")
     layerOptions = <LayerOptionsDropout key={layers?.[selectedLayerIndex]?.index}
@@ -126,6 +130,13 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                       type={layers?.[selectedLayerIndex]?.type || ""}
                                       rate={layers?.[selectedLayerIndex]?.rate}
                                       vis={layerOptVis} 
+                                      onClose={HandleLayerOptionClose} />;
+    else if (layers[selectedLayerIndex].type === "Flatten")
+    layerOptions = <LayerOptionsflatten key={layers?.[selectedLayerIndex]?.index}
+                                      index = {layers?.[selectedLayerIndex]?.index}
+                                      type={layers?.[selectedLayerIndex]?.type || ""}
+                                      vis={layerOptVis} 
+                                      inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                       onClose={HandleLayerOptionClose} />;
     else{
       layerOptions = null

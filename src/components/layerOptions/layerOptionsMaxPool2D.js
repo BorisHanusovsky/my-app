@@ -88,18 +88,18 @@ export default class LayerOptionsMaxPool2D extends React.Component{
   
 
   handleInputShapeChange = (event) => {
-    // if(event.target.value === "")
-    //   this.setState({
-    //     inputShape: [32,32]
-    //   });
-    // else{
-    //   const val = event.target.value.split(',');
-    //   let arr = []
-    //   val.forEach((element) => arr.push(parseInt(element,10)));
-    //   this.setState({
-    //     inputShape: arr
-    //   });
-    // }
+    if(event.target.value === "")
+      this.setState({
+        inputShape: [32,32]
+      });
+    else{
+      const val = event.target.value.split(',');
+      let arr = []
+      val.forEach((element) => arr.push(parseInt(element,10)));
+      this.setState({
+        inputShape: arr
+      });
+    }
    
     this.setState({
       inputShape: event.target.value

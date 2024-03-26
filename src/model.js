@@ -1,11 +1,12 @@
 import { LayerType } from "./components/layers/layerEnum";
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/storage'
-import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup} from "firebase/auth";
+import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup, signOut,setPersistence,browserLocalPersistence} from "firebase/auth";
 import { getStorage,ref,getDownloadURL,uploadBytes } from "firebase/storage";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const tf = require('@tensorflow/tfjs');
+
 
 let model;
 let trainingCompleted = false
@@ -18,9 +19,60 @@ const app = firebase.initializeApp({
     appId: "1:468959726053:web:aa97f1f9484cbaedb1470c"
   });
 
-  export async function getModelNames() {
+  const auth = getAuth(app)
+  setPersistence(auth,browserLocalPersistence)
+
+
+// // onAuthStateChanged(auth, user =>{
+// //   console.log(`You are logged in as:${user.displayName}`)
+// // })
+
+// export async function LogIn(account){
+//   if (account?.displayName !== undefined){
+
+//     try {
+//       const auth = getAuth(app)
+//       let usr = await signInWithPopup(auth, new GoogleAuthProvider());
+//       return usr.user;
+//     } catch (error) {
+//       console.error("Login failed:", error);
+//       throw error; // Rethrow or handle error as needed
+//     }
+//   }
+//   else{
+//     alert(account.displayName)
+    
+//       firebase.auth().signOut().then(() => {
+//         alert("Sign aout sucessfull")
+//       }).catch((error) => {
+//         throw error
+//       });
+//   }
+// }
+
+export async function logIn() {
+  try {
+      const userCredential = await signInWithPopup(auth, new GoogleAuthProvider());
+      return userCredential.user;
+  } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
+  }
+}
+
+export async function logOut() {
+  try {
+      await signOut(auth);
+      console.log("Logout successful");
+  } catch (error) {
+      console.error("Logout failed:", error);
+      throw error;
+  }
+}
+
+  export async function getModelNames(accountName) {
     try {
-      const result = await firebase.storage().ref().listAll();
+      const result = await firebase.storage().ref(accountName).listAll();
       let modelNames = [];
   
       result.prefixes.forEach(function (prefix) {
@@ -35,11 +87,11 @@ const app = firebase.initializeApp({
     }
   }
 
-export async function downloadModel(modelName) {
+export async function downloadModel(modelName, accountName) {
     const storageRef = firebase.storage().ref();
     
     //var modelRef = storageRef.child(`Convolucka/Convolucka.json`);
-    var modelRef = storageRef.child(`${modelName.current}/${modelName.current}.json`);
+    var modelRef = storageRef.child(`${accountName}/${modelName.current}/model.json`);
     //var modelRef = storageRef.child(`tfjs_model/model.json`);
     console.log(modelRef);
     try {
@@ -92,25 +144,25 @@ export function compileModel(){
     }
 }
 
-async function uploadModelArtifacts(modelName, jsonFile, binFile) {
+async function uploadModelArtifacts(modelName, accountName, jsonFile, binFile) {
     // Upload JSON and binary files to Firebase Storage
     const blob1 = new Blob([jsonFile], { type: 'application/json' });
     const blob2 = new Blob([binFile], { type: 'application/octet-stream' });
 
     const storageRef = firebase.storage().ref();
-    const jsonRef = storageRef.child(`${modelName}/${modelName}.json`);
+    const jsonRef = storageRef.child(`${accountName}/${modelName}/model.json`);
     const task1 = jsonRef.put(blob1)
     task1.then(snapshot => {
       console.log(snapshot);
     })
-    const binRef = storageRef.child(`${modelName}/${modelName}.weights.bin`);
+    const binRef = storageRef.child(`${accountName}/${modelName}/model.weights.bin`);
     const task2 = binRef.put(blob2)
     task2.then(snapshot => {
       console.log(snapshot);
     })
 }
 
-export async function saveModel(modelName) {
+export async function saveModel(modelName, accountName) {
   try{
       let jsonFile, binFile;
       const customSaveHandler = async (modelArtifacts) => {
@@ -121,7 +173,7 @@ export async function saveModel(modelName) {
       };
 
       await model.save(tf.io.withSaveHandler(customSaveHandler));
-      await uploadModelArtifacts(modelName, jsonFile, binFile)
+      await uploadModelArtifacts(modelName, accountName, jsonFile, binFile)
       return Promise.resolve("✅ Model saved successfully! ✅");
   }
   catch(err){
@@ -161,12 +213,12 @@ export async function preprocessData(rawData) {
 //   return activations;
 // }
 
-export async function testModel(modelName, data){
-  await downloadModel(modelName);
+export async function testModel(modelName, data,accountName){
+  await downloadModel(modelName,accountName);
   model.predict(tf.tensor4d(data.images[0]), data.labels[0] );
 }
 
-export async function trainAndFetchActivations(modelName, dataset) {
+export async function trainAndFetchActivations(modelName, dataset,accountName) {
   try {
     if (!modelName) { // Assuming you meant to check modelName here
       alert("Save the model first");
@@ -176,7 +228,11 @@ export async function trainAndFetchActivations(modelName, dataset) {
       alert("No dataset defined");
       return;
     }
-    const training = await trainModel(modelName,dataset);
+    if(!accountName){
+      alert("You need to be logged in");
+      return;
+    }
+    const training = await trainModel(modelName,dataset,accountName);
     if (training){
       // Make sure this function handles errors/exceptions appropriately
       await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
@@ -190,17 +246,17 @@ export async function trainAndFetchActivations(modelName, dataset) {
     return null; // Ensure the caller knows an error occurred
   }
 }
-const ip = '34.141.192.44'
+const ip = '35.204.18.129'
 //const ip = process.env.IP
 
-export async function trainModel(modelName,dataset) {
+export async function trainModel(modelName,dataset,accountName) {
   try {
     await fetch(`http://${ip}:5000/train`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({'dir': modelName, 'dataset' : dataset})
+      body: JSON.stringify({'dir': modelName, 'dataset' : dataset, 'account' : accountName})
     });
     return true;
   } catch (error) {
@@ -264,15 +320,30 @@ async function fetchActivations() {
   });
 }
 
-export async function importModel(modelName) {
+export async function importModel(modelName, accountName) {
     try {
-      await downloadModel(modelName);
+      await downloadModel(modelName,accountName);
       return model_to_layers();
     } catch (error) {
       console.error("Error importing model:", error);
       throw error; // Propagate the error to the caller
     }
   }
+
+export async function exportModel(modelName, accountName){
+  if(!accountName){
+    alert("You need to be logged in");
+    return;
+  }
+  if (!modelName) { // Assuming you meant to check modelName here
+    alert("Save the model first");
+    return;
+  }
+  if(model){
+    await downloadModel(modelName,accountName);
+    model.save('downloads://my-model')
+  }
+}
 
 export function add_model_layer(layer) {
     if (typeof tf === 'undefined') {
@@ -298,7 +369,7 @@ export function add_model_layer(layer) {
             nlayer = tf.layers.dropout({rate : layer.rate});
             break;
         case LayerType.FLATTEN:
-            nlayer = tf.layers.flatten();
+            nlayer = tf.layers.flatten( {inputShape: layer.inputShape});
             break;
         default:
             console.log('Unknown layer type');
@@ -338,7 +409,7 @@ function model_to_layers() {
                 i++;
                 break;
             case LayerType.FLATTEN:
-                layers.push({index : i, type : LayerType.FLATTEN})
+                layers.push({index : i, type : LayerType.FLATTEN, inputShape : shape})
                 i++;
                 break;
         }

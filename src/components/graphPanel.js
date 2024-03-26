@@ -10,6 +10,7 @@ export default function GraphPanel({ history }) {
     // Check if history has the necessary properties before attempting to set graphs
     if (history && history.accuracy && history.val_accuracy) {
       setGraphs([
+        
         { curve: "catmullRom", data: history.accuracy, label: 'Train accuracy' },
         { curve: "catmullRom", data: history.val_accuracy, label: 'Validation accuracy' },
       ]);

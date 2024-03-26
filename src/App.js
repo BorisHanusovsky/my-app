@@ -5,7 +5,7 @@ import './model.js';
 import ModelPanel from './components/modelPanel.js';
 import Navbar from './components/navbar.js';
 import Footer from './components/footer/footer.js';
-import {createModel, add_model_layer, saveModel, compileModel,importModel, getModelNames, trainAndFetchActivations,testModel} from './model.js'
+import {createModel, add_model_layer, saveModel, compileModel,importModel,exportModel, getModelNames, trainAndFetchActivations,testModel, logIn, logOut} from './model.js'
 import * as tf from '@tensorflow/tfjs'
 import ModalSavedModels from './components/modals/modalSavedModels.js';
 import DisplayPanel from './components/DisplayPanel.js';
@@ -26,6 +26,8 @@ function App() {
   const [activations, setActivations] = useState([])
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [selectedDataset, setSelectedDataset] = useState('MNIST')
+  const [currentEpoch, setCurrentEpoch] = useState(null)
+  const [account, setAccount] = useState(null)
 
   useEffect(() => {
     console.log(`Layers in app :`);
@@ -35,6 +37,10 @@ function App() {
 
 
   const onSaveButtonPressed = () =>{
+    if (!account){
+      alert('You need to be logged in')
+      return
+    }
     if (layerList){
       if (layerList.length!== 0){
         createModel();
@@ -44,7 +50,7 @@ function App() {
           if (compileModel() === true){
             selectedModel.current =  window.prompt("Name your model",selectedModel.current === null? "MyModel" : selectedModel.current);
             if(selectedModel.current !== null){
-              saveModel(selectedModel.current)
+              saveModel(selectedModel.current,account?.displayName)
               .then((successMessage) => {
                 alert(successMessage);
               })
@@ -69,7 +75,7 @@ function App() {
     selectedModel.current = model;
     setSaveResultVis(false);
     if(model){
-      const layers = await importModel(selectedModel);
+      const layers = await importModel(selectedModel,account?.displayName);
       console.log('Setting layerList state:', layers);
       setLayerList([...layers]);
     }
@@ -82,8 +88,12 @@ function App() {
   }
 
   async function onTrainButtonPressed() {
+    if (!account){
+      alert('You need to be logged in')
+      return
+    }
     setDataLoading(true);
-    const act = await trainAndFetchActivations(selectedModel.current, selectedDataset);
+    const act = await trainAndFetchActivations(selectedModel.current, selectedDataset,account?.displayName);
     setDataLoading(false);
     if (act) { // Check if 'act' is not null/undefined
         setActivations(act);
@@ -123,6 +133,10 @@ function App() {
     else{
       setSelectedIndex(null)
     }
+  }
+
+  const onEpochNumChange = (epochNum) =>{
+    setCurrentEpoch(epochNum)
   }
 
   const addLayer = (layerType) => {
@@ -186,6 +200,7 @@ function App() {
               type: layerType,
               index: layerList.length,
               isActive: false,
+              inputShape : null
             };
             break;  
         default:
@@ -199,25 +214,53 @@ function App() {
       };
  
   const onTestButtonPressed = () =>{
-    testModel(selectedModel,activations);
+    if (!account){
+      alert('You need to be logged in')
+      return
+    }
+    testModel(selectedModel,activations,account?.displayName);
+  }
+
+  async function onLoginButtonPressed(isLoggedIn){
+    if(isLoggedIn){
+      await logOut();
+      setAccount(null)
+    }
+      
+    else{
+      var acc = await logIn(account);
+      setAccount(acc)
+    }
   }
 
   const onImportButtonPressed = async () => {
     try {
-      const names = await getModelNames();
+      if (!account){
+        alert('You need to be logged in')
+        return
+      }
+      const names = await getModelNames(account.displayName);
       console.log("back in app");
       if (names && names.length > 0) {
         setModelNames(names);
         setSaveResultVis(true);
-        
       } 
       else {
         alert("💾 💾No saved models 💾 💾 \n")
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error fetching model names or importing model:', error);
     }
   };
+
+  const onExportButtonPressed =()=>{
+    if (!account){
+      alert('You need to be logged in')
+      return
+    }
+    exportModel(selectedModel.current,account.displayName)
+  }
 
 function onIndexChange(index){
   if(selectedIndex == null)
@@ -227,12 +270,12 @@ function onIndexChange(index){
 
   return (
     <div className="App">
-      <Navbar selectedDataset = {selectedDataset} onDatasetClicked = {onDatasetClicked} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed}/>
+      <Navbar selectedDataset = {selectedDataset} onDatasetClicked = {onDatasetClicked} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onExportButtonPressed={onExportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed} accountImage={account?.photoURL} onLoginButtonPressed={onLoginButtonPressed}/>
       <div className="content">
         <ModelPanel onButtonPlusClick= {onButtonPlusClick} onButtonMinusClick= {onButtonMinusClick} layers = {layerList} setLayerList ={setLayerList} onIndexChange ={onIndexChange}/>
         <div className="right_panel">                   
                                                            {/*  epocha(asi max 7), vrstva, obrazok(10)                  */}
-          <DisplayPanel activations = {activations?.activations?.[0][selectedIndex] } position = {0} imgs = {activations.images}  load = {dataLoading}/>
+          <DisplayPanel activations = {activations?.activations?.[currentEpoch !== null ? currentEpoch : 0][selectedIndex] } imgs = {activations.images}  load = {dataLoading} epoch ={currentEpoch} onEpochNumChange ={onEpochNumChange}/>
           <GraphPanel history ={activations.history}></GraphPanel>
         </div>
       </div>

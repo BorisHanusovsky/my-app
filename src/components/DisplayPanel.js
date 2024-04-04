@@ -153,7 +153,7 @@ export default function DisplayPanel({activations, imgs, load,epochNum, onEpochN
         <button style={activations?.length>0 ? { visibility:'visible'} : {visibility : 'collapse'} } onClick={handleOnChangeImageClick}> Change image</button>
         <button style={ activations?.length>0 ? { visibility:'visible'} : {visibility : 'collapse'} } onClick={handleOnShowInputClick}> Show input</button>
         <span style={ activations?.length>0 ? { visibility:'visible'} : {visibility : 'collapse'} }>Epoch: {epoch}</span>
-        <input  type="range" min={1} max={activations.length}  step={1}  onChange={(event) => handleEpochChange(event)} style={ {accentColor : "#DDF2FD" ,width : '30%', marginLeft :'10px', visibility: activations?.length > 0 ? "visible" : "collapse"} } ></input>
+        <input  type="range" min={1} max={activations?.length}  step={1}  onChange={(event) => handleEpochChange(event)} style={ {accentColor : "#DDF2FD" ,width : '30%', marginLeft :'10px', visibility: activations?.length > 0 ? "visible" : "collapse"} } ></input>
       </div>
       <div style={{display : 'flex', alignItems : 'center', justifyContent: 'center'}}>
       <canvas ref={canvasRef}  width={1000} style={{ display: load ? 'none' : 'block' }}></canvas>

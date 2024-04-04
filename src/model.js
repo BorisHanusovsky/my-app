@@ -247,7 +247,7 @@ export async function trainAndFetchActivations(modelName, dataset,accountName,se
     return null; // Ensure the caller knows an error occurred
   }
 }
-const ip = '34.32.150.216'
+const ip = '34.32.162.39'
 //const ip = process.env.IP
 
 export async function trainModel(modelName,dataset,accountName,settings) {

@@ -76,45 +76,24 @@ export default function Navbar({
   }
 
   return (
-    <nav style={{padding : '5px'}}>
-      <span style={{float: 'left'}}>
-      <h1> <span style={{color: '#F2545B'}}>NN</span> visualizer</h1>
-      <h2>Selected dataset: {selectedDataset}</h2>
-
-      <span className="nav_left">
-        <button onClick={handleImportModel}>Import model</button>
-        <button onClick={handleExportModel}>Export model</button>
-        <button onClick={handleSaveModel}>Save model</button>
-      </span>
-      <span className="nav_right">
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={(event) => handleInputChanged(event)}
-          id="dataInput"
-          name="dataInput"
-          accept="image/*"
-          multiple
-          style={{ display: 'none' }}
-        />
-        <input
-          directory=""
-          ref={modelInputRef}
-          onChange={(event) => handleModelChanged(event)}
-          webkitdirectory=""
-          type="file"
-          style={{ display: 'none' }}
-        />
-        <button id="loadDataButton" onClick={handleDatasetClicked}>Dataset</button>
-        <button onClick={handleSettingsButtonPressed}>Settings</button>
-        <button onClick={handleTrainButtonPressed}>Train</button>
-        {/* <button onClick={handleTestButtonPressed}>Test</button> */}
-      </span>
-      </span>
-      <span style={{float : 'right'}}>
+    <nav style={{padding : '5px', display : 'inline-block', minHeight : '300px'}}>
+      <span style={{display : 'block'}}>
+        <h1 > <span style={{color: '#F2545B'}}>NN</span> visualizer</h1>
+        <h2>Selected dataset: {selectedDataset}</h2>
+        <span style={{position : 'absolute', width: '95%'}}>
+          <button onClick={handleImportModel}>Import model</button>
+          <button onClick={handleExportModel}>Export model</button>
+          <button onClick={handleSaveModel}>Save model</button>
+          <button id="loadDataButton" onClick={handleDatasetClicked}>Dataset</button>
+          <button onClick={handleSettingsButtonPressed}>Settings</button>
+          <button onClick={handleTrainButtonPressed}>Train</button>
+        </span>
+        <span style={{ position: 'absolute', right: '20px', top : '0px'}}>
         <button onClick={handleLoginButtonPressed}>{buttonText}</button>
         <img src={accountImage} style={{borderRadius : '50%', height:'40px'}}></img>
       </span>
+      </span>
+     
       
     </nav>
   );

@@ -15,25 +15,19 @@ html{
 .App{
   height: 100vh;
   display: grid;
-  grid-template-rows: 8% 84% 8%;
+  grid-template-rows: 10% 84% 6%;
   grid-template-columns: 50% 5% 45% ;
 }
 nav{
   background-color: #427D9D;
   grid-column: 1/4;
   color: #DDF2FD;
+  min-height: 100px;
 }
 h1{
   font-size: 3vh;
 }
-.nav_left{
-  width: 50%;
-  /* display: flexbox; */
-}
-.nav_right{
-  width: 50%;
-  /* display: flexbox; */
-}
+
 #dataInput{
   display: none;
 }

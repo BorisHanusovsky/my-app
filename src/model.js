@@ -341,12 +341,12 @@ export async function exportModel(modelName, accountName){
     alert("Save the model first");
     return;
   }
-  fetch(`http://${ip}:5000/keras`)
+  //fetch(`http://${ip}:5000/keras`)
   // .then(response => response.json())
-  // if(model){
-  //   await downloadModel(modelName,accountName);
-  //   model.save('downloads://my-model')
-  // }
+  if(model){
+    await downloadModel(modelName,accountName);
+    model.save('downloads://my-model')
+  }
 }
 
 export function add_model_layer(layer) {

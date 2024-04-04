@@ -10,7 +10,8 @@ export default function Navbar({
   onDatasetClicked,
   selectedDataset,
   accountImage,
-  onLoginButtonPressed
+  onLoginButtonPressed,
+  onSettingsButtonPressed
 }) {
   const fileInputRef = useRef(null);
   const modelInputRef = useRef(null);
@@ -59,6 +60,10 @@ export default function Navbar({
     onTrainButtonPressed();
   }
 
+  function handleSettingsButtonPressed(){
+    onSettingsButtonPressed();
+  }
+
   function handleTestButtonPressed() {
     onTestButtonPressed();
   }
@@ -101,6 +106,7 @@ export default function Navbar({
           style={{ display: 'none' }}
         />
         <button id="loadDataButton" onClick={handleDatasetClicked}>Dataset</button>
+        <button onClick={handleSettingsButtonPressed}>Settings</button>
         <button onClick={handleTrainButtonPressed}>Train</button>
         {/* <button onClick={handleTestButtonPressed}>Test</button> */}
       </span>

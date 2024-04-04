@@ -20,36 +20,19 @@ export default class LayerOptionsflatten extends React.Component{
   }
 
   handleClose = () => {
-    this.setState({
-    visibility: false
-    });
-    this.props.onClose(); // Notify the parent component about the close event
+    this.setState({ visibility: false });
+    this.props.onClose(this.state.inputShape); // Assuming you want to pass the inputShape back to the parent component
   };
 
   handleSubmit = () => {
-    this.setState({
-    visibility: false
-    });
-    this.props.onClose(this.state); // Notify the parent component about the close event
+    this.setState({ visibility: false });
+    this.props.onClose(this.state); // Pass the entire state or just the parts you need
   };
 
   handleInputShapeChange = (event) => {
-    if(event.target.value === "")
-      this.setState({
-        inputShape: [32,32]
-      });
-    else{
-      const val = event.target.value.split(',');
-      let arr = []
-      val.forEach((element) => arr.push(parseInt(element,10)));
-      this.setState({
-        inputShape: arr
-      });
-    }
-   
-    this.setState({
-      inputShape: event.target.value
-    });
+    const inputShapeString = event.target.value;
+    const inputShapeArray = inputShapeString.split(',').map(num => parseInt(num, 10) || 0);
+    this.setState({ inputShape: inputShapeArray });
   }
 
   render(){

@@ -145,12 +145,15 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
   return (
    
     <div className="model_panel">
+      <div style={{position : 'sticky'}}>
       <h2>Model panel</h2>
       <div className="model_panel_controls">
-        <button className = "sticky" onClick={onButtonPlusClick}>+</button>
-        <button className = "sticky" onClick={onButtonMinusClick}>-</button>
-        <button className = "sticky" onClick={handleLayerDoubleClick}>Change </button>
+        <button  onClick={onButtonPlusClick}>+</button>
+        <button  onClick={onButtonMinusClick}>-</button>
+        <button  onClick={handleLayerDoubleClick}>Change </button>
       </div>
+      </div>
+     
       
       {/* {layers.filter(layer => layer != null).map((layer) => (
   <LayerFactory

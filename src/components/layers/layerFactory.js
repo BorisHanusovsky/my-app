@@ -23,7 +23,7 @@ const LayerFactory = ({ layer, handleLayerClick, handleLayerDoubleClick, isActiv
     case 'Dropout':
       return <LayerDropout layer={layer} handleLayerClick={handleLayerClick} handleLayerDoubleClick={handleLayerDoubleClick} isActive ={isActive}/>;
     case 'Flatten':
-      return <LayerFlatten layer={layer} handleLayerClick={handleLayerClick} isActive ={isActive}/>;
+      return <LayerFlatten layer={layer} handleLayerClick={handleLayerClick} handleLayerDoubleClick={handleLayerDoubleClick} isActive ={isActive}/>;
     default:
       return<LayerEmpty layer={layer} isActive = {isActive}/>;
   }

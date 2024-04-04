@@ -13,12 +13,15 @@ import GraphPanel from './components/graphPanel.js';
 import ModalDatasetSelect from './components/modals/modalDatasetSelect.js';
 import ModalLayerTypes from './components/modals/modalLayerTypes.js';
 import { LayerType } from "./components/layers/layerEnum";
+import ModalSettings from './components/modals/modalSettings.js';
 
 
 function App() {
   let [layerList, setLayerList] = useState([]);
   const [saveResultVis, setSaveResultVis] = useState(false);
   const [datasetResultVis, setDatasetResultVis] = useState(false);
+  const [settings, setSettings] = useState(null)
+  const [settingsResultVis, setSettingsResultVis] = useState(false);
   const [layerTypesVis, setLayerTypesVis] = useState(false)
   const selectedModel = useRef(null);
   const [modelNames, setModelNames] = useState([]);
@@ -93,7 +96,7 @@ function App() {
       return
     }
     setDataLoading(true);
-    const act = await trainAndFetchActivations(selectedModel.current, selectedDataset,account?.displayName);
+    const act = await trainAndFetchActivations(selectedModel.current, selectedDataset,account?.displayName,settings);
     setDataLoading(false);
     if (act) { // Check if 'act' is not null/undefined
         setActivations(act);
@@ -262,6 +265,18 @@ function App() {
     exportModel(selectedModel.current,account.displayName)
   }
 
+  const onSettingsButtonPressed =()=>{
+    setSettingsResultVis(true);
+  }
+
+  const onSettingsClose = (settings) =>{
+    setSettingsResultVis(false);
+    if(settings){
+      setSettings(settings)
+      alert(settings.optimizer)
+    }
+  }
+
 function onIndexChange(index){
   if(selectedIndex == null)
     setSelectedIndex(0)
@@ -270,7 +285,7 @@ function onIndexChange(index){
 
   return (
     <div className="App">
-      <Navbar selectedDataset = {selectedDataset} onDatasetClicked = {onDatasetClicked} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onExportButtonPressed={onExportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed} accountImage={account?.photoURL} onLoginButtonPressed={onLoginButtonPressed}/>
+      <Navbar selectedDataset = {selectedDataset} onDatasetClicked = {onDatasetClicked} onSaveButtonPressed={onSaveButtonPressed} onDatasetImportStart = {onDatasetImportStart} onImportButtonPressed={onImportButtonPressed} onExportButtonPressed={onExportButtonPressed} onTrainButtonPressed = {onTrainButtonPressed} onTestButtonPressed = {onTestButtonPressed} onSettingsButtonPressed={onSettingsButtonPressed} accountImage={account?.photoURL} onLoginButtonPressed={onLoginButtonPressed}/>
       <div className="content">
         <ModelPanel onButtonPlusClick= {onButtonPlusClick} onButtonMinusClick= {onButtonMinusClick} layers = {layerList} setLayerList ={setLayerList} onIndexChange ={onIndexChange}/>
         <div className="right_panel">                   
@@ -291,6 +306,7 @@ function onIndexChange(index){
       <ModalSavedModels visibility = {saveResultVis} onModalSavedModelClose = {onModalSavedModelClose} modelNames = {modelNames}/>
       <ModalDatasetSelect visibility = {datasetResultVis} onDatasetClose = {onDatasetClose}/>
       <ModalLayerTypes visibility={layerTypesVis} onModalLayerTypesClose = {onModalLayerTypesClose} layerTypes = {Object.values(LayerType)}/>
+      <ModalSettings visibility={settingsResultVis} onSettingsClose={onSettingsClose}/>
     </div>
   );
 }

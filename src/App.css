@@ -70,7 +70,7 @@ button:hover{
   background-color: #9BBEC8;
   width: 50%;
   color: black;
-  height: 20%;
+  height: auto; /*20%*/
   border-radius: 10px;
   padding: 10px;
 }

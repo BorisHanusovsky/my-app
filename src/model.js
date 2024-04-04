@@ -218,7 +218,7 @@ export async function testModel(modelName, data,accountName){
   model.predict(tf.tensor4d(data.images[0]), data.labels[0] );
 }
 
-export async function trainAndFetchActivations(modelName, dataset,accountName) {
+export async function trainAndFetchActivations(modelName, dataset,accountName,settings) {
   try {
     if (!modelName) { // Assuming you meant to check modelName here
       alert("Save the model first");
@@ -232,7 +232,8 @@ export async function trainAndFetchActivations(modelName, dataset,accountName) {
       alert("You need to be logged in");
       return;
     }
-    const training = await trainModel(modelName,dataset,accountName);
+    trainingCompleted = false
+    const training = await trainModel(modelName,dataset,accountName,settings);
     if (training){
       // Make sure this function handles errors/exceptions appropriately
       await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
@@ -246,20 +247,21 @@ export async function trainAndFetchActivations(modelName, dataset,accountName) {
     return null; // Ensure the caller knows an error occurred
   }
 }
-const ip = '35.204.18.129'
+const ip = '34.32.150.216'
 //const ip = process.env.IP
 
-export async function trainModel(modelName,dataset,accountName) {
+export async function trainModel(modelName,dataset,accountName,settings) {
   try {
     await fetch(`http://${ip}:5000/train`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({'dir': modelName, 'dataset' : dataset, 'account' : accountName})
+      body: JSON.stringify({'dir': modelName, 'dataset' : dataset, 'account' : accountName, 'optimizer' : settings.optimizer, 'learningRate' : settings.learningRate, 'epochs' : settings.epochs})
     });
     return true;
   } catch (error) {
+    console.log(error)
     alert('Server not running');
     return false;
   }
@@ -339,10 +341,12 @@ export async function exportModel(modelName, accountName){
     alert("Save the model first");
     return;
   }
-  if(model){
-    await downloadModel(modelName,accountName);
-    model.save('downloads://my-model')
-  }
+  fetch(`http://${ip}:5000/keras`)
+  // .then(response => response.json())
+  // if(model){
+  //   await downloadModel(modelName,accountName);
+  //   model.save('downloads://my-model')
+  // }
 }
 
 export function add_model_layer(layer) {
@@ -369,7 +373,7 @@ export function add_model_layer(layer) {
             nlayer = tf.layers.dropout({rate : layer.rate});
             break;
         case LayerType.FLATTEN:
-            nlayer = tf.layers.flatten( {inputShape: layer.inputShape});
+            nlayer = tf.layers.flatten( {batchInputShape: layer.inputShape});
             break;
         default:
             console.log('Unknown layer type');

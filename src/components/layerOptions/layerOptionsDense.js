@@ -12,77 +12,59 @@ export default class LayerOptionsDense extends React.Component{
     onClose: this.props.onClose,
     activationType: this.props.activationType,
     index: this.props.index,
+    batchSize: this.props.batchSize,
     inputShape:this.props.inputShape,
   };
 
   selectedImage = require('./../../images/linear.png');
 
   componentDidUpdate(prevProps) {
-    // Check if the numOfNeurons prop has changed
+    // Check if the numOfKernels prop has changed
     if (prevProps.numOfNeurons !== this.props.numOfNeurons) {
       this.setState({
         numOfNeurons: this.props.numOfNeurons || 1
       });
     }
+    if (prevProps.inputShape !== this.props.inputShape) {
+      this.setState({
+        inputShape: this.props.inputShape
+      })
+    }
+    if(this.props.batchSize !== this.state.inputShape[0]){
+      const updatedInputShape = [...this.state.inputShape];
+      updatedInputShape[0] = this.props.batchSize; // Update the batch size dimension
+      this.setState({
+        inputShape: updatedInputShape
+      })
+    }
   }
 
   handleClose = () => {
-    if(this.state.numOfNeurons != ""){
-      this.setState({
-        visibility: false
-      });
-      this.props.onClose(); // Notify the parent component about the close event
-    }
+    this.props.onClose();
   };
 
   handleSubmit = () => {
-    if (this.state.numOfNeurons !== "") {
-      this.setState({
-        visibility: false
-      });
-      if (this.state.inputShape != undefined){
-        if (this.state.inputShape === "") {
-          this.setState({
-            inputShape: [32, 32]
-          }, () => {
-            this.props.onClose(this.state); // Notify the parent component about the close event after state update
-          });
-        } 
-        else {
-            const val = this.state.inputShape.split(',');
-            let arr = val.map(element => parseInt(element, 10));
-            this.setState({
-              inputShape: arr
-            }, () => {
-              this.props.onClose(this.state); // Notify the parent component about the close event after state update
-          });
-          }
-      }
-      else{
-        this.props.onClose(this.state);
-      }
-      
-    }
+    this.props.onClose(this.state);
   };
 
-  handleInputShapeChange = (event) => {
-    if(event.target.value === "")
-      this.setState({
-        inputShape: [32,32]
-      });
-    else{
-      const val = event.target.value.split(',');
-      let arr = []
-      val.forEach((element) => arr.push(parseInt(element,10)));
-      this.setState({
-        inputShape: arr
-      });
-    }
+//  handleInputShapeChange = (event) => {
+//     if(event.target.value === "")
+//       this.setState({
+//         inputShape: [32,32]
+//       });
+//     else{
+//       const val = event.target.value.split(',');
+//       let arr = []
+//       val.forEach((element) => arr.push(parseInt(element,10)));
+//       this.setState({
+//         inputShape: arr
+//       });
+//     }
    
-    this.setState({
-      inputShape: event.target.value
-    });
-  }
+//     this.setState({
+//       inputShape: event.target.value
+//     });
+//   }
 
   handleLayerNumChange = (event) => {
     if(event.target.value === "")
@@ -104,13 +86,20 @@ export default class LayerOptionsDense extends React.Component{
     });
   }
 
+  handleBatchSizeChange = (event) =>{
+    this.setState({
+      batchSize: event.target.value,
+    });
+  }
+
   render(){
     if (this.props.vis) {
       let shapeEditor;
       if (this.props.index === 0){
         shapeEditor = <div className ="layerOptionsRow" style={{gridRow:2, gridColumn:1/3}}> 
-                          <label className = "layerOptionsLabel" htmlFor="layerCount" >Input shape:</label>
-                          <input id="layerCountTextbox" type="text" className="textik" value={this.state.inputShape} onChange={(event) => this.handleInputShapeChange(event)}/>
+                          <label className = "layerOptionsLabel" htmlFor="layerCount" >Batch size:</label>
+                          <input id="layerCountTextbox" type="number" className="textik" min={1} max={512} value={this.state.batchSize} onChange={(event) => this.handleBatchSizeChange(event)}/>
+                          <p>Input shape: {String([this.state.batchSize, this.state.inputShape.slice(1)])}</p>
                       </div>
                       }
       return (

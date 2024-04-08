@@ -16,6 +16,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
   let newLayerRef = useRef(null);
 
   useEffect(() => {
+    console.log('hello')
     console.log(layers)}, [layers, setLayerList]);
 
 
@@ -93,6 +94,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                          padding={layers?.[selectedLayerIndex]?.padding}
                                          activationType = {layers?.[selectedLayerIndex]?.activationType}
                                          vis={layerOptVis} 
+                                         batchSize = {layers?.[selectedLayerIndex]?.batchSize}
                                          inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                          onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "Dense")
@@ -102,6 +104,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                    numOfNeurons={layers?.[selectedLayerIndex]?.numOfNeurons} 
                                    activationType = {layers?.[selectedLayerIndex]?.activationType}
                                    vis={layerOptVis} 
+                                   batchSize = {layers?.[selectedLayerIndex]?.batchSize}
                                    inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                    onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "MaxPool2D")
@@ -112,6 +115,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                       strides={layers?.[selectedLayerIndex]?.strides}
                                       padding={layers?.[selectedLayerIndex]?.padding}
                                       vis={layerOptVis} 
+                                      batchSize = {layers?.[selectedLayerIndex]?.batchSize}
                                       inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                       onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "AvgPool2D")
@@ -122,6 +126,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                       strides={layers?.[selectedLayerIndex]?.strides}
                                       padding={layers?.[selectedLayerIndex]?.padding}
                                       vis={layerOptVis} 
+                                      batchSize = {layers?.[selectedLayerIndex]?.batchSize}
                                       inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                       onClose={HandleLayerOptionClose} />;
     else if (layers[selectedLayerIndex].type === "Dropout")
@@ -136,6 +141,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
                                       index = {layers?.[selectedLayerIndex]?.index}
                                       type={layers?.[selectedLayerIndex]?.type || ""}
                                       vis={layerOptVis} 
+                                      batchSize = {layers?.[selectedLayerIndex]?.batchSize}
                                       inputShape={layers?.[selectedLayerIndex]?.inputShape}
                                       onClose={HandleLayerOptionClose} />;
     else{

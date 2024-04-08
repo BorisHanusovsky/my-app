@@ -15,10 +15,12 @@ export default class LayerOptionsConv2D extends React.Component{
     strides: this.props.strides || [1,1],
     padding: this.props.padding || this.paddingTypes[0],
     index: this.props.index,
-    inputShape : this.props.inputShape?.join() || ""
+    batchSize: this.props.batchSize,
+    inputShape : this.props.inputShape || []
   };
-
+  
   selectedImage = require(`./../../images/${this.state.activationType}.png`);
+  stringShape = String(this.state.inputShape)
 
   handleKernelSize1Change = (event) =>{
     this.setState({
@@ -48,18 +50,25 @@ export default class LayerOptionsConv2D extends React.Component{
     // Check if the numOfKernels prop has changed
     if (prevProps.numOfKernels !== this.props.numOfKernels) {
       this.setState({
-        numOfKernels: this.props.numOfKernels || 1
-      });
+        numOfKernels: this.props.numOfKernels || 1,
+      })
+    }
+    if (prevProps.inputShape !== this.props.inputShape) {
+      this.setState({
+        inputShape: this.props.inputShape
+      })
+    }
+    if(this.props.batchSize !== this.state.inputShape[0]){
+      const updatedInputShape = [...this.state.inputShape];
+      updatedInputShape[0] = this.props.batchSize; // Update the batch size dimension
+      this.setState({
+        inputShape: updatedInputShape
+      })
     }
   }
 
   handleClose = () => {
-    if(this.state.numOfKernels != ""){
-      this.setState({
-        visibility: false
-      });
-      this.props.onClose(); // Notify the parent component about the close event
-    }
+    this.props.onClose();
   };
 
   // handleInputShapeChange = (event) => {
@@ -84,32 +93,7 @@ export default class LayerOptionsConv2D extends React.Component{
   // };
 
   handleSubmit = () => {
-    if(this.state.numOfKernels!= ""){
-      this.setState({
-        visibility: false
-      });
-      if (this.state.inputShape != undefined){
-        if (this.state.inputShape === "") {
-          this.setState({
-            inputShape: [32, 32]
-          }, () => {
-            this.props.onClose(this.state); // Notify the parent component about the close event after state update
-          });
-        } 
-        else {
-            const val = this.state.inputShape.split(',');
-            let arr = val.map(element => parseInt(element, 10));
-            this.setState({
-              inputShape: arr
-            }, () => {
-              this.props.onClose(this.state); // Notify the parent component about the close event after state update
-          });
-          }
-      }
-      else{
-        this.props.onClose(this.state);
-      }
-    }
+    this.props.onClose(this.state);
   };
 
   handleLayerNumChange = (event) => {
@@ -138,22 +122,33 @@ export default class LayerOptionsConv2D extends React.Component{
     });
   }
 
-  handleInputShapeChange = (event) => {
-    if(event.target.value === "")
-      this.setState({
-        inputShape: [32,32]
-      });
-    else{
-      const val = event.target.value.split(',');
-      let arr = []
-      val.forEach((element) => arr.push(parseInt(element,10)));
-      this.setState({
-        inputShape: arr
-      });
-    }
+  // handleInputShapeChange = (event) => {
+  //   if(event.target.value === "")
+  //     this.setState({
+  //       inputShape: [32,32]
+  //     });
+  //   else{
+  //    
+  //     this.setState({
+  //       inputShape: arr
+  //     });
+  //   }
    
+  //   this.setState({
+  //     inputShape: event.target.value
+  //   });
+  // }
+
+  // handleBatchSizeChange = (event) =>{
+  //   this.setState({
+  //     batchSize : event.target.value,
+  //     inputShape : [parseInt(event.target.value), this.props.inputShape[1], this.props.inputShape[2], this.props.inputShape[3]]
+  //   })
+  // }
+
+  handleBatchSizeChange = (event) => {
     this.setState({
-      inputShape: event.target.value
+      batchSize: event.target.value,
     });
   }
 
@@ -162,10 +157,17 @@ export default class LayerOptionsConv2D extends React.Component{
       let shapeEditor;
       if (this.props.index === 0){
         shapeEditor = <div className ="layerOptionsRow" style={{gridRow:2, gridColumn:1/3}}> 
-                          <label className = "layerOptionsLabel">Input shape:</label>
-                          <input title="batch size , height, width, chanels" id="layerCountTextbox" type="text" className="textik" value={this.state.inputShape} onChange={(event) => this.handleInputShapeChange(event)}/>
-                      </div>
+                          <label className = "layerOptionsLabel">Batch size:</label>
+                          <input id="layerCountTextbox" type="number" className="textik" min={1} max={512} value={this.state.batchSize} onChange={(event) => this.handleBatchSizeChange(event)}/>
+                          <p>Input shape: {String([this.state.batchSize, this.state.inputShape.slice(1)])}</p>
+                      </div> 
                       }
+      // if (this.props.index === 0){
+      //   shapeEditor = <div className ="layerOptionsRow" style={{gridRow:2, gridColumn:1/3}}> 
+      //                     <label className = "layerOptionsLabel">Input shape:</label>
+      //                     <input title="batch size , height, width, chanels" id="layerCountTextbox" type="text" className="textik" value={this.state.inputShape} onChange={(event) => this.handleInputShapeChange(event)}/>
+      //                 </div>
+      //                 }
       return (
         <div className="layerOptions" style={{ visibility: this.props.vis }}>
           <div className ="layerOptionsRow" style={{gridRow:1, gridColumn:1/3}}>

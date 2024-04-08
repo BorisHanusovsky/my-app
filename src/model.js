@@ -355,7 +355,7 @@ export function add_model_layer(layer) {
         return;
     }
     let nlayer;
-    
+    alert(layer.inputShape)
       switch (layer.type) {
         case LayerType.DENSE:
             nlayer = tf.layers.dense({ units: layer.numOfNeurons, activation: layer.activationType, batchInputShape: layer.inputShape});
@@ -389,23 +389,25 @@ function model_to_layers() {
     }
     let layers = [];
     let i = 0;
+    let batch = model.layers[0].batchInputShape[0]
     model.layers.forEach(layer => {
         let shape = i === 0 ? layer.batchInputShape : undefined
+        alert(shape)
         switch(layer.constructor.className){
             case LayerType.DENSE:
-                layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, inputShape : shape});
+                layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, batchSize : batch, inputShape : shape});
                 i++;
                 break;
             case LayerType.CONV:
-                layers.push({index : i, type : LayerType.CONV, numOfKernels : layer.filters, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activationType: layer.activation.constructor.className, inputShape : shape})
+                layers.push({index : i, type : LayerType.CONV, numOfKernels : layer.filters, kernelSize: layer.kernelSize, strides : layer.strides, padding : layer.padding, activationType: layer.activation.constructor.className, batchSize : batch, inputShape : shape})
                 i++;
                 break;
             case 'MaxPooling2D':
-                layers.push({index : i, type : LayerType.MAXP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : shape})
+                layers.push({index : i, type : LayerType.MAXP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, batchSize : batch, inputShape : shape})
                 i++;
                 break;
             case 'AveragePooling2D':
-                layers.push({index : i, type : LayerType.AVGP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, inputShape : shape})
+                layers.push({index : i, type : LayerType.AVGP, poolSize : layer.poolSize, strides : layer.strides, padding : layer.padding, batchSize : batch, inputShape : shape})
                 i++;
                 break;
             case LayerType.DROP:
@@ -413,7 +415,7 @@ function model_to_layers() {
                 i++;
                 break;
             case LayerType.FLATTEN:
-                layers.push({index : i, type : LayerType.FLATTEN, inputShape : shape})
+                layers.push({index : i, type : LayerType.FLATTEN, batchSize : batch, inputShape : shape})
                 i++;
                 break;
         }

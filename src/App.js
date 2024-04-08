@@ -45,6 +45,7 @@ function App() {
       return
     }
     if (layerList){
+      console.log(layerList)
       if (layerList.length!== 0){
         createModel();
         try{
@@ -113,8 +114,22 @@ function App() {
 
   const onDatasetClose =(dataset)=>{
     setDatasetResultVis(false);
-    if (dataset !== null)
+    if (dataset !== null){
       setSelectedDataset(dataset)
+      if(layerList.length > 0){
+        let l = layerList
+        let temp = layerList[0]
+        if(temp.inputShape){
+          if(dataset === 'CIFAR10')
+            temp.inputShape = [temp.inputShape[0],32,32,3]
+          else
+            temp.inputShape = [temp.inputShape[0],28,28,1]
+          }
+        l[0] = temp
+        console.log(l[0])
+        setLayerList(l)
+      }
+    }
   }
 
   const onModalLayerTypesClose = (layerType)=>{
@@ -149,10 +164,11 @@ function App() {
           newLayer = {
             type: layerType,
             index: layerList.length,
-            numOfNeurons: 16, 
+            numOfNeurons: 10, 
             isActive: false,
             activationType: "linear",
-            inputShape : null
+            batchSize: 16,
+            inputShape : [16, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 3 : 1]
           };
           break;
         case 'Conv2D':
@@ -165,7 +181,8 @@ function App() {
               padding: "valid",
               isActive: false,
               activationType: "linear",
-              inputShape : null
+              batchSize: 16,
+              inputShape : [16, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 3 : 1]
             };
             break;
         case 'MaxPool2D':
@@ -176,7 +193,8 @@ function App() {
               strides: [2,2],
               padding: "valid",
               isActive: false,
-              inputShape : null
+              batchSize: 16,
+              inputShape : [16, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 3 : 1]
             };
             break;  
         case 'AvgPool2D':
@@ -187,7 +205,8 @@ function App() {
               strides: [2,2],
               padding: "valid",
               isActive: false,
-              inputShape : null
+              batchSize: 16,
+              inputShape : [16, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 3 : 1]
             };
             break;  
         case 'Dropout':
@@ -203,7 +222,8 @@ function App() {
               type: layerType,
               index: layerList.length,
               isActive: false,
-              inputShape : null
+              batchSize: 16,
+              inputShape : [16, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 32 : 28, selectedDataset == 'CIFAR10' ? 3 : 1]
             };
             break;  
         default:

@@ -7,26 +7,32 @@ export default class LayerOptionsflatten extends React.Component{
     onClose: this.props.onClose,
     index: this.props.index,
     type: this.props.type,
+    batchSize: this.props.batchSize,
     inputShape:this.props.inputShape,
   };
 
+
   componentDidUpdate(prevProps) {
-    // Check if the numOfKernels prop has changed
-    if (prevProps.numOfKernels !== this.props.numOfKernels) {
-      this.setState({
-        numOfKernels: this.props.numOfKernels || 1
-      });
-    }
+    if (prevProps.inputShape !== this.props.inputShape) {
+        this.setState({
+          inputShape: this.props.inputShape
+        })
+      }
+    if(this.props.batchSize !== this.state.inputShape[0]){
+        const updatedInputShape = [...this.state.inputShape];
+        updatedInputShape[0] = this.props.batchSize; // Update the batch size dimension
+        this.setState({
+          inputShape: updatedInputShape
+        })
+      }
   }
 
   handleClose = () => {
-    this.setState({ visibility: false });
-    this.props.onClose(this.state.inputShape); // Assuming you want to pass the inputShape back to the parent component
+    this.props.onClose();
   };
 
   handleSubmit = () => {
-    this.setState({ visibility: false });
-    this.props.onClose(this.state); // Pass the entire state or just the parts you need
+    this.props.onClose(this.state);
   };
 
   handleInputShapeChange = (event) => {
@@ -35,13 +41,20 @@ export default class LayerOptionsflatten extends React.Component{
     this.setState({ inputShape: inputShapeArray });
   }
 
+  handleBatchSizeChange = (event) =>{
+    this.setState({
+        batchSize: event.target.value,
+      });
+  }
+
   render(){
     if (this.props.vis) {
         let shapeEditor;
         if (this.props.index === 0){
             shapeEditor = <div className ="layerOptionsRow" style={{gridRow:2, gridColumn:1/3}}> 
-                            <label className = "layerOptionsLabel">Input shape:</label>
-                            <input title="batch size , height, width, chanels" id="layerCountTextbox" type="text" className="textik" value={this.state.inputShape} onChange={(event) => this.handleInputShapeChange(event)}/>
+                            <label className = "layerOptionsLabel">Batch size:</label>
+                            <input id="layerCountTextbox" type="number" className="textik" min={1} max={512} value={this.state.batchSize} onChange={(event) => this.handleBatchSizeChange(event)}/>
+                          <p>Input shape: {String([this.state.batchSize, this.state.inputShape.slice(1)])}</p>
                         </div>
                         }
       return (

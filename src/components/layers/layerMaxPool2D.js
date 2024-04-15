@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-
-export default function LayerMaxPool2D({layer, handleLayerClick, handleLayerDoubleClick, isActive}) {
+export default function LayerMaxPool2D({layer, handleLayerClick, handleLayerDoubleClick, isActive}) { // komponent reprezentujúci hlasovaciu vrstvu s výberom maximálnej hodnoty v Model panel
    
 const handleClick = () => {
   handleLayerClick(layer.index);

@@ -5,58 +5,42 @@ import LayerFactory from "./layers/layerFactory";
 import LayerOptionsMaxPool2D from "./layerOptions/layerOptionsMaxPool2D";
 import LayerOptionsAvgPool2D from "./layerOptions/layerOptionsAvgPool2D";
 import LayerOptionsDropout from "./layerOptions/layerOptionsDropout";
-import { add_model_layer, create_model } from "./../model.js";
-import { LayerType } from "./layers/layerEnum.js";
 import LayerOptionsflatten from "./layerOptions/layerOptionsFlatten.js";
 
-const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onButtonMinusClick}) => {
-  const [selectedLayerIndex, setSelectedLayerIndex] = useState(null);
-  const [keyIndex, setKeyIndex] = useState(0);
-  const [layerOptVis, setLayerOptionsVisibility] = useState(false);
+const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onButtonMinusClick}) => { // komponent zodpovedný za sprostredkovanie dát pre nastavenia vrstiev
+  const [selectedLayerIndex, setSelectedLayerIndex] = useState(null); // index vybranej vrstvy
+  const [keyIndex, setKeyIndex] = useState(0); // index
+  const [layerOptVis, setLayerOptionsVisibility] = useState(false); // viditeľnosť nastavenia 
   let newLayerRef = useRef(null);
 
   useEffect(() => {
-    console.log('hello')
     console.log(layers)}, [layers, setLayerList]);
-
-
-
-  const openLayerOptions = () =>{
-    setLayerOptionsVisibility(true)
-  }
 
   console.log("ModelPanel component rendered");
   console.log(selectedLayerIndex, keyIndex);
-
-
 
   useEffect(() => {
     if (newLayerRef.current !== null && selectedLayerIndex !== null) {
       setLayerList((prevLayers) => {
         const updatedLayers = [...prevLayers, newLayerRef.current];
-        newLayerRef.current = null; // Reset the ref after updating the state
+        newLayerRef.current = null;
         return updatedLayers;
       });
     }
-  }, [setLayerList,newLayerRef,selectedLayerIndex]); // selectedLayerIndex
+  }, [setLayerList,newLayerRef,selectedLayerIndex]);
 
-  // const handleLayerClick = (index) => {
-  //   setSelectedLayerIndex(index);
-  //   onIndexChange(index)
-  // };
-
-  const handleLayerClick = (index) => {
+  const handleLayerClick = (index) => { // zmena vybranej vrstvy
     setSelectedLayerIndex(index);
-    onIndexChange(index); // Assuming onIndexChange is a prop function for notifying parent components
+    onIndexChange(index);
   };
 
-  const handleLayerDoubleClick = (index) => {
+  const handleLayerDoubleClick = (index) => { // zobrazenie nasrtaven=i vrstvy po dvojitom kliku
     if (!layerOptVis && selectedLayerIndex!=undefined){
       setLayerOptionsVisibility(true)
     }
   };
 
-  const HandleLayerOptionClose = (layer) => {
+  const HandleLayerOptionClose = (layer) => { // uloženie nastavení vrstvy do siete 
     if (layerOptVis) setLayerOptionsVisibility(false);
     if (layer !== undefined) {
       let temp = [...layers];
@@ -65,23 +49,14 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
     }
   };
 
-  // const removeSelectedLayer = () => {
-  //   setSelectedLayerIndex(null);
-  //   onIndexChange(null)
-  //   if (layers.length > 0) {
-  //     setKeyIndex((prevKeyIndex) => prevKeyIndex - 1);
-  //     setLayerList((prevLayers) => prevLayers.slice(0, -1));
-  //   }
-  //   else{
-  //     setKeyIndex(0);
-  //   }
-  // };
-
   useEffect(() => {
    setKeyIndex(layers.length);
   }, [layers]);
 
   let layerOptions;
+
+  // VÝBER NASTAVENÍ VRSTVY PODĽA TYPU VRSTVY
+  //-----------------------------------------------------------------------------------
 
   if (layers[selectedLayerIndex] && layers[selectedLayerIndex].type !== undefined) {
     if (layers[selectedLayerIndex].type === "Conv2D")
@@ -148,6 +123,8 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
       layerOptions = null
     }
 }
+//-----------------------------------------------------------------------------------
+
   return (
    
     <div className="model_panel">
@@ -159,18 +136,7 @@ const ModelPanel = ({layers, setLayerList, onIndexChange, onButtonPlusClick, onB
         <button  onClick={handleLayerDoubleClick}>Change </button>
       </div>
       </div>
-     
-      
-      {/* {layers.filter(layer => layer != null).map((layer) => (
-  <LayerFactory
-    key={layer.index}
-    layer={layer}
-    handleLayerClick={handleLayerClick}
-    handleLayerDoubleClick={handleLayerDoubleClick}
-    isActive={layer?.index === selectedLayerIndex}
-  />
-))} */}
-
+{/* vutvorenie všetkých vrstiev siete */}
 { 
 layers.filter(layer => layer != null).map((layer, index) => (
   <LayerFactory

@@ -1,4 +1,3 @@
-// App.js
 import React, { useState,useEffect, useRef } from 'react';
 import './App.css';
 import './model.js';
@@ -6,7 +5,6 @@ import ModelPanel from './components/modelPanel.js';
 import Navbar from './components/navbar.js';
 import Footer from './components/footer/footer.js';
 import {createModel, add_model_layer, saveModel, compileModel,importModel,exportModel, getModelNames, trainAndFetchActivations,testModel, logIn, logOut} from './model.js'
-import * as tf from '@tensorflow/tfjs'
 import ModalSavedModels from './components/modals/modalSavedModels.js';
 import DisplayPanel from './components/DisplayPanel.js';
 import GraphPanel from './components/graphPanel.js';
@@ -16,21 +14,26 @@ import { LayerType } from "./components/layers/layerEnum";
 import ModalSettings from './components/modals/modalSettings.js';
 
 
-function App() {
-  let [layerList, setLayerList] = useState([]);
-  const [saveResultVis, setSaveResultVis] = useState(false);
-  const [datasetResultVis, setDatasetResultVis] = useState(false);
-  const [settings, setSettings] = useState(null)
-  const [settingsResultVis, setSettingsResultVis] = useState(false);
-  const [layerTypesVis, setLayerTypesVis] = useState(false)
-  const selectedModel = useRef(null);
-  const [modelNames, setModelNames] = useState([]);
-  const [dataLoading, setDataLoading] = useState(false);
-  const [activations, setActivations] = useState([])
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const [selectedDataset, setSelectedDataset] = useState('MNIST')
-  const [currentEpoch, setCurrentEpoch] = useState(null)
-  const [account, setAccount] = useState(null)
+function App() { // hlavny komponent aplikacie, su v nom ulozene ostatne komponenty. Ma funkcionality:
+                      // vytvaranie vrstiev, 
+                      // komunikaciu so suborom model.js kde prebieha vytvorenie tensorflow.js modelu, 
+                      // preposielanie argumentov medzi komponentami
+                      // logovanie 
+  
+  let [layerList, setLayerList] = useState([]); // zoznam vrstiev siete
+  const [saveResultVis, setSaveResultVis] = useState(false); // viditelnost modalneho okna pre vyber ulozenych modelov
+  const [datasetResultVis, setDatasetResultVis] = useState(false); // viditelnost modalneho okna pre vyber datasetov
+  const [settings, setSettings] = useState(null) // konfiguracia nastaveni trenovania
+  const [settingsResultVis, setSettingsResultVis] = useState(false); // viditelnost modalneho okna pre nastavenia trenovania
+  const [layerTypesVis, setLayerTypesVis] = useState(false) // viditelnost modalneho okna pre vyber typu vrstvy
+  const selectedModel = useRef(null); // vybrany model(nazov)
+  const [modelNames, setModelNames] = useState([]); // nazvy modelov
+  const [dataLoading, setDataLoading] = useState(false); // priebeh nacitavania - ak je True, zobrazuje sa animacia v Display panel
+  const [activations, setActivations] = useState([]) // aktivacie 
+  const [selectedIndex, setSelectedIndex] = useState(0) // index vybranej vrstvy
+  const [selectedDataset, setSelectedDataset] = useState('MNIST') // vybrany dataset
+  const [currentEpoch, setCurrentEpoch] = useState(null) // aktualna epocha
+  const [account, setAccount] = useState(null) // ucet pouzivatela
 
   useEffect(() => {
     console.log(`Layers in app :`);
@@ -39,7 +42,7 @@ function App() {
   
 
 
-  const onSaveButtonPressed = () =>{
+  const onSaveButtonPressed = () =>{ // ulozenie modelui, funkcia vykonana po stlaceni tlacidla SAVE v navigacii
     if (!account){
       alert('You need to be logged in')
       return
@@ -47,14 +50,14 @@ function App() {
     if (layerList){
       console.log(layerList)
       if (layerList.length!== 0){
-        createModel();
+        createModel(); // vytvorenie instancie modelu
         try{
-          for(var i = 0; i< layerList.length; i++)
+          for(var i = 0; i< layerList.length; i++) // pridanie vrstiev do modelu
             add_model_layer(layerList[i]);
           if (compileModel() === true){
             selectedModel.current =  window.prompt("Name your model",selectedModel.current === null? "MyModel" : selectedModel.current);
             if(selectedModel.current !== null){
-              saveModel(selectedModel.current,account?.displayName)
+              saveModel(selectedModel.current,account?.displayName) // ulozenie modelu
               .then((successMessage) => {
                 alert(successMessage);
               })
@@ -75,23 +78,23 @@ function App() {
     }
   }
 
-  async function onModalSavedModelClose(model){
+  async function onModalSavedModelClose(model){ // import modelu
     selectedModel.current = model;
     setSaveResultVis(false);
     if(model){
       const layers = await importModel(selectedModel,account?.displayName);
       console.log('Setting layerList state:', layers);
-      setLayerList([...layers]);
+      setLayerList([...layers]); // modifikacia vrstiev
     }
   }
 
 
 
-  const onDatasetImportStart = () =>{
+  const onDatasetImportStart = () =>{ //spustenie animacie nacitavania
     setDataLoading(true);
   }
 
-  async function onTrainButtonPressed() {
+  async function onTrainButtonPressed() { // trenovanie modelu
     if (!account){
       alert('You need to be logged in')
       return
@@ -108,11 +111,11 @@ function App() {
     }
   }
 
-  const onDatasetClicked = () =>{
+  const onDatasetClicked = () =>{ // obrazenie okna pre vyber datasetu
     setDatasetResultVis(true);
   }
 
-  const onDatasetClose =(dataset)=>{
+  const onDatasetClose =(dataset)=>{ // vyber datasetu, upravava vstupneho tvaru dat do siete 
     setDatasetResultVis(false);
     if (dataset !== null){
       setSelectedDataset(dataset)
@@ -132,18 +135,18 @@ function App() {
     }
   }
 
-  const onModalLayerTypesClose = (layerType)=>{
+  const onModalLayerTypesClose = (layerType)=>{ // zatvorenie okna pre vyber vrstvy
     if (layerType !== null)
       addLayer(layerType)
     else 
       setLayerTypesVis(false)
   }
 
-  const onButtonPlusClick = () =>{
+  const onButtonPlusClick = () =>{ // otvorenie okna pre vyber vrstvy
     setLayerTypesVis(true)
   }
 
-  const onButtonMinusClick = () =>{
+  const onButtonMinusClick = () =>{ // odstranenie poslednej vrstvy siete
     if (layerList.length > 0) {
       setLayerList((prevLayers) => prevLayers.slice(0, -1));
       setSelectedIndex(layerList.length - 1)
@@ -153,11 +156,11 @@ function App() {
     }
   }
 
-  const onEpochNumChange = (epochNum) =>{
+  const onEpochNumChange = (epochNum) =>{ // zmena aktualnej epochy
     setCurrentEpoch(epochNum)
   }
 
-  const addLayer = (layerType) => {
+  const addLayer = (layerType) => { // pridanie vrstvy
       let newLayer;
       switch (layerType) {
         case 'Dense':
@@ -236,7 +239,7 @@ function App() {
       setSelectedIndex(layerList.length > 0 ? layerList.length - 1 : null)
       };
  
-  const onTestButtonPressed = () =>{
+  const onTestButtonPressed = () =>{ // nepouzite
     if (!account){
       alert('You need to be logged in')
       return
@@ -244,19 +247,18 @@ function App() {
     testModel(selectedModel,activations,account?.displayName);
   }
 
-  async function onLoginButtonPressed(isLoggedIn){
+  async function onLoginButtonPressed(isLoggedIn){ // prihlasenie/ odhlasenie
     if(isLoggedIn){
       await logOut();
       setAccount(null)
     }
-      
     else{
       var acc = await logIn(account);
       setAccount(acc)
     }
   }
 
-  const onImportButtonPressed = async () => {
+  const onImportButtonPressed = async () => { // import modelu
     try {
       if (!account){
         alert('You need to be logged in')
@@ -277,7 +279,7 @@ function App() {
     }
   };
 
-  const onExportButtonPressed =()=>{
+  const onExportButtonPressed =()=>{ // export modelu
     if (!account){
       alert('You need to be logged in')
       return
@@ -285,11 +287,11 @@ function App() {
     exportModel(selectedModel.current,account.displayName)
   }
 
-  const onSettingsButtonPressed =()=>{
+  const onSettingsButtonPressed =()=>{ // zobrazenie okna konfiguracie nastaveni trenovania
     setSettingsResultVis(true);
   }
 
-  const onSettingsClose = (settings) =>{
+  const onSettingsClose = (settings) =>{ // zatvorenie okna konfiguracie trenovania
     setSettingsResultVis(false);
     if(settings){
       setSettings(settings)
@@ -297,7 +299,7 @@ function App() {
     }
   }
 
-function onIndexChange(index){
+function onIndexChange(index){ // zmena indexu vybranej vrstvy
   if(selectedIndex == null)
     setSelectedIndex(0)
   else setSelectedIndex(index)

@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-
-export default function LayerDense({ layer, handleLayerClick, handleLayerDoubleClick, isActive}){
+export default function LayerDense({ layer, handleLayerClick, handleLayerDoubleClick, isActive}){ // komponent reprezentujúci plne prepojenú vrstvu v Model panel
   const handleClick = () => {
    handleLayerClick(layer.index);
   };

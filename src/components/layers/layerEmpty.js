@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-
-export default function LayerEmpty({isActive}){
+export default function LayerEmpty({isActive}){ // komponent reprezentujúci prázdnu vrstvu v Model panel, slúži len na testovacie účely
   return (
     <div className="layer"
       style={{

@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-
-export default function LayerFlatten({layer, handleLayerClick,isActive,handleLayerDoubleClick}) {
+export default function LayerFlatten({layer, handleLayerClick,isActive,handleLayerDoubleClick}) { // komponent reprezentujúci vyhladzovaciu vrstvu v Model panel
    
 const handleClick = () => {
   handleLayerClick(layer.index);

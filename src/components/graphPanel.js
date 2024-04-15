@@ -1,14 +1,13 @@
 import * as React from 'react';
-import { useState, useEffect } from "react";
-import { LineChart } from '@mui/x-charts/LineChart';
+import { useState, useEffect } from "react"; 
+import { LineChart } from '@mui/x-charts/LineChart'; // knižnica pre vykreaslenie grafu
 
-export default function GraphPanel({ history }) {
+export default function GraphPanel({ history }) { // komponent pre zobrazenie grafu trénovania
   const [graphs, setGraphs] = useState([]);
   const [axisData, setAxisData] = useState();
 
   useEffect(() => {
-    // Check if history has the necessary properties before attempting to set graphs
-    if (history && history.accuracy && history.val_accuracy) {
+    if (history && history.accuracy && history.val_accuracy) { // kontrola či sú dáta o presnosti a strate dostupné
       setGraphs([
         
         { curve: "catmullRom", data: history.accuracy, label: 'Train accuracy' },
@@ -17,7 +16,7 @@ export default function GraphPanel({ history }) {
     }
   }, [history]);
 
-  const handleAccuracyClicked = () => {
+  const handleAccuracyClicked = () => { // udalosť po kiku na tlačidlo zobrazenia grafu presnosti
     if (history && history.accuracy && history.val_accuracy) {
       setGraphs([
         { curve: "catmullRom", data: history.accuracy, label: 'Train accuracy' },
@@ -26,17 +25,13 @@ export default function GraphPanel({ history }) {
     }
   };
 
-  const handleLossClicked = () => {
+  const handleLossClicked = () => { // udalosť po kiku na tlačidlo zobrazenia grafu straty
     if (history && history.loss && history.val_loss) {
       setGraphs([
         { curve: "catmullRom", data: history.loss, label: 'Train loss' },
         { curve: "catmullRom", data: history.val_loss, label: 'Validation loss' },
       ]);
     }
-  };
-
-  const handleLineClicked = (d) => {
-    alert(`Clicked on ${d.label}`);
   };
 
   return (

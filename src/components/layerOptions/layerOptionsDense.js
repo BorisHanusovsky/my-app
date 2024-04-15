@@ -1,25 +1,22 @@
-import React, { useState, useEffect, useRef} from "react";
+import React from 'react';
 import "./layerOptions.css";
-import { string } from "@tensorflow/tfjs";
-
-export default class LayerOptionsDense extends React.Component{
-  activationTypes = ["linear", "sigmoid", "tanh", "relu", "softmax"]
+export default class LayerOptionsDense extends React.Component{ // komponent nastavení konvolučnej vrstvy
+  activationTypes = ["linear", "sigmoid", "tanh", "relu", "softmax"] // typy aktivačných funkcií
 
   state = {
-    numOfNeurons: this.props.numOfNeurons || 1,
-    visibility : this.props.vis,
-    type : this.props.type,
-    onClose: this.props.onClose,
-    activationType: this.props.activationType,
-    index: this.props.index,
-    batchSize: this.props.batchSize,
-    inputShape:this.props.inputShape,
+    numOfNeurons: this.props.numOfNeurons || 16, // počet neurónov vrstvy, prednastavená hodnota je 16
+    visibility : this.props.vis, // viditeľnosť - príznak nastavujúci viditeľnosť okna
+    type : this.props.type, // typ vrstvy - zobrazí vo vrchnej časti okna
+    onClose: this.props.onClose, // metóda volaná po zatvorení okna
+    activationType: this.props.activationType, // zvolená aktivačná vrstva, prednastavená hodnota je lineárna
+    index: this.props.index, // index vrsty v sieti
+    batchSize: this.props.batchSize, // veľkosť vstupnej dávky
+    inputShape:this.props.inputShape, // tvar vstupných dát
   };
 
-  selectedImage = require('./../../images/linear.png');
+  selectedImage = require('./../../images/linear.png'); // obrázok, zobrazujúci vybraný tvar aktivačnej funkcie
 
-  componentDidUpdate(prevProps) {
-    // Check if the numOfKernels prop has changed
+  componentDidUpdate(prevProps) { // zmena stavu komponentu v prípade zmien vstupných argumentov
     if (prevProps.numOfNeurons !== this.props.numOfNeurons) {
       this.setState({
         numOfNeurons: this.props.numOfNeurons || 1
@@ -32,40 +29,23 @@ export default class LayerOptionsDense extends React.Component{
     }
     if(this.props.batchSize !== this.state.inputShape[0]){
       const updatedInputShape = [...this.state.inputShape];
-      updatedInputShape[0] = this.props.batchSize; // Update the batch size dimension
+      updatedInputShape[0] = this.props.batchSize; // úprava tvaru vstupu do siete podľa veľkosti vstupnej dávky
       this.setState({
         inputShape: updatedInputShape
       })
     }
   }
 
-  handleClose = () => {
+  handleClose = () => { // po stlačení tlačidla X nebudú uložené aktuálne nastavenia do modelu
     this.props.onClose();
   };
 
-  handleSubmit = () => {
+  handleSubmit = () => { // po stlačení tlačidla OK budú uložené aktuálne nastavenia do modelu
     this.props.onClose(this.state);
   };
 
-//  handleInputShapeChange = (event) => {
-//     if(event.target.value === "")
-//       this.setState({
-//         inputShape: [32,32]
-//       });
-//     else{
-//       const val = event.target.value.split(',');
-//       let arr = []
-//       val.forEach((element) => arr.push(parseInt(element,10)));
-//       this.setState({
-//         inputShape: arr
-//       });
-//     }
-   
-//     this.setState({
-//       inputShape: event.target.value
-//     });
-//   }
-
+// UKLADANIE STAVU KOMPONENT
+//-----------------------------------------------------------------------------------------
   handleLayerNumChange = (event) => {
     if(event.target.value === "")
     this.setState({
@@ -92,10 +72,13 @@ export default class LayerOptionsDense extends React.Component{
     });
   }
 
+//-----------------------------------------------------------------------------------------
+// ZOBRAZENIE OKNA
+
   render(){
-    if (this.props.vis) {
+    if (this.props.vis) { // okno zbude zobrazené len ak argument vis(viditeľnosť) bude mať kladnú hodnotu
       let shapeEditor;
-      if (this.props.index === 0){
+      if (this.props.index === 0){ // logika zobrazenia/nezobrazenia editoru pre veľkosť vstupnej dávky
         shapeEditor = <div className ="layerOptionsRow" style={{gridRow:2, gridColumn:1/3}}> 
                           <label className = "layerOptionsLabel" htmlFor="layerCount" >Batch size:</label>
                           <input id="layerCountTextbox" type="number" className="textik" min={1} max={512} value={this.state.batchSize} onChange={(event) => this.handleBatchSizeChange(event)}/>
@@ -105,20 +88,23 @@ export default class LayerOptionsDense extends React.Component{
       return (
 
         <div className="layerOptions" >
-          {shapeEditor}
           <div className ="layerOptionsRow" style={{gridRow:1, gridColumn:1/3}}>
+            {/* tlačidlo X pre zatvorenie okna */}
             <span id = "layerOptionsClose" className="close" onClick={this.handleClose}>
               &times;
             </span>
             <h1 id = "layerOptionsTitle">{this.props.type}</h1>
           </div>
-         
+
+          {/* editor veľkosti vstupnej dávky*/}
+          {shapeEditor}
+          {/* editor počtu neurónov*/}
           <div className ="layerOptionsRow" style={{gridRow:3, gridColumn:1/3}}> 
-            <label className = "layerOptionsLabel" htmlFor="layerCount" >Layer count:</label>
+            <label className = "layerOptionsLabel" htmlFor="layerCount" >Neuron count:</label>
             <input id="layerCountSlider" type="range" name="layerCount" min={1} max={256}  step={1} value={String(this.state.numOfNeurons)} onChange={(event) => this.handleLayerNumChange(event)}></input>
             <input id="layerCountTextbox" type="number" className="textik" value={this.state.numOfNeurons} onChange={(event) => this.handleLayerNumChange(event)}/>
           </div>
-         
+          {/* editor aktivačnej funkcie*/}
           <div className ="layerOptionsRow" style={{gridRow:4, gridColumn:1/3}}>
             <label className = "layerOptionsLabel" htmlFor="activationTypeCombobox">Activation function:</label>
             <select className="combobox" defaultValue={this.state.activationType} onChange = {(event) => {this.handleLayerActivationTypeChange(event)}}>
@@ -126,14 +112,14 @@ export default class LayerOptionsDense extends React.Component{
             </select>
             <img id = "activationImage" src={this.selectedImage}/>
           </div>
-  
+          {/* tlačidlo OK pre zatvorenie okna a uloženie nastavení vrstvy do siete*/}
           <div className ="layerOptionsRow" style={{gridRow:5, gridColumn:1/3}}>
             <button id ="okButton" onClick={this.handleSubmit}>OK</button>
           </div>
         </div>
       );
     } else {
-      return null; // Don't render anything if visibility is false
+      return null;
     }
   }
 }

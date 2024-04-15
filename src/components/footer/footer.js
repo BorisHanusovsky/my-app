@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import "./footer.css";
 
-export default function Footer() {
+export default function Footer() { // komponent päty aplikácie 
   return (
     <div id = "footer">
       <div id ="centered">

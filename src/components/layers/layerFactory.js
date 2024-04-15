@@ -8,6 +8,8 @@ import LayerDropout from './layerDropout';
 import LayerFlatten from './layerFlatten';
 import LayerInput from './layerInput';
 
+// dynamické vutvorenie vrstvy podľa jej typu
+
 const LayerFactory = ({ layer, handleLayerClick, handleLayerDoubleClick, isActive, inputShape1, inputShape2}) => {
   switch (layer.type) {
     case 'Input':

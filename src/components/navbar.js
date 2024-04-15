@@ -1,45 +1,29 @@
-import React, { useEffect, useRef, useState} from 'react';
+import React, { useEffect, useState} from 'react';
 
-export default function Navbar({
-  onFilesSelected,
-  onSaveButtonPressed,
-  onImportButtonPressed,
-  onExportButtonPressed,
-  onTrainButtonPressed,
-  onTestButtonPressed,
-  onDatasetClicked,
-  selectedDataset,
-  accountImage,
-  onLoginButtonPressed,
-  onSettingsButtonPressed
+export default function Navbar({ // komponent navigácie obsahujúci viacero tlačidiel pre ovládanie aplikácie
+  onSaveButtonPressed, // funkcia vykonana po stlaceni tlacidla SAVE
+  onImportButtonPressed, // funkcia vykonana po stlaceni tlacidla IMPORT MODEL
+  onExportButtonPressed, // funkcia vykonana po stlaceni tlacidla EXPORT MODEL
+  onTrainButtonPressed, // funkcia vykonana po stlaceni tlacidla TRAIN
+  onDatasetClicked, // funkcia vykonana po stlaceni tlacidla DATASET
+  selectedDataset, // vybrany dataset, meni obsah navigacie
+  accountImage, // obrazok uctu pouzovatela
+  onLoginButtonPressed, // funkcia vykonana po stlaceni tlacidla LOG IN
+  onSettingsButtonPressed // funkcia vykonana po stlaceni tlacidla SETTINGS
 }) {
-  const fileInputRef = useRef(null);
-  const modelInputRef = useRef(null);
-  const [buttonText,setButtonText] = useState('Log in')
+  const [buttonText,setButtonText] = useState('Log in') // text tlacidla pre prihlasenie/odhlasenie
 
-  useEffect(() =>{
+  useEffect(() =>{ // zmena textu prihlasenia/odhlasenia
     if (accountImage === undefined)  
       setButtonText('Log in')
     else
       setButtonText('Log out')}
     ,[accountImage])
 
+  // VOLANIE FUNKCII V APP.JS
+  //-------------------------------------------- 
   async function handleDatasetClicked() {
     onDatasetClicked()
-  }
-
-  function handleLoadModelClicked() {
-    modelInputRef.current.click();
-  }
-
-  function handleInputChanged(event) {
-    console.log('Selected files:', event.target.files);
-    onFilesSelected(event.target.files);
-  }
-
-  function handleModelChanged(event) {
-    console.log('Selected files:', event.target.files);
-    onImportButtonPressed(event.target.files);
   }
 
   function handleSaveModel() {
@@ -47,12 +31,10 @@ export default function Navbar({
   }
 
   function handleImportModel() {
-    //modelInputRef.current.click();
     onImportButtonPressed();
   }
 
   function handleExportModel() {
-    //modelInputRef.current.click();
     onExportButtonPressed();
   }
 
@@ -64,16 +46,13 @@ export default function Navbar({
     onSettingsButtonPressed();
   }
 
-  function handleTestButtonPressed() {
-    onTestButtonPressed();
-  }
-
   function handleLoginButtonPressed(){
     if (buttonText === 'Log in')
       onLoginButtonPressed(false);
     else
       onLoginButtonPressed(true);
   }
+  //-------------------------------------------- 
 
   return (
     <nav style={{padding : '5px', display : 'inline-block', minHeight : '300px'}}>

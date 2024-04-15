@@ -1,6 +1,5 @@
-import React, { useState } from "react";
 
-export default function LayerConv2D({layer, handleLayerClick, handleLayerDoubleClick, isActive}) {
+export default function LayerConv2D({layer, handleLayerClick, handleLayerDoubleClick, isActive}) { // komponent reprezentujúci konvolučnú vrstvu s výberom priemernej hodnoty v Model panel
    
 const handleClick = () => {
   handleLayerClick(layer.index);

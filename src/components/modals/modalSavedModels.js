@@ -1,27 +1,27 @@
 import React, { useState } from 'react';
 
-export default function ModalSavedModels({ visibility, onModalSavedModelClose, modelNames }) {
+export default function ModalSavedModels({ visibility, onModalSavedModelClose, modelNames }) { // komponent modálneho okna uložených modelov
   const [hoveredButtons, setHoveredButtons] = useState(Array(modelNames.length).fill(false));
-  const vis = visibility;
-  const names = modelNames === undefined ? [] : modelNames;
+  const vis = visibility; // viditeľnosť modálneho okna
+  const names = modelNames === undefined ? [] : modelNames; // názvy uložených modelov
 
-  const handleMouseEnter = (index) => {
+  const handleMouseEnter = (index) => { // udalosť prechodu kuzroru po tlačidle modelu, dochádza k jeho zvýrazneniu
     const updatedHoveredButtons = [...hoveredButtons];
     updatedHoveredButtons[index] = true;
     setHoveredButtons(updatedHoveredButtons);
   };
 
-  const handleMouseLeave = (index) => {
+  const handleMouseLeave = (index) => { // udalosť odchodu kuzroru z tlačidla modelu, dochádza k odstráneniu zvýraznenia
     const updatedHoveredButtons = [...hoveredButtons];
     updatedHoveredButtons[index] = false;
     setHoveredButtons(updatedHoveredButtons);
   };
 
-  const handleClosePressed = () => {
+  const handleClosePressed = () => { // udalosť po kliku na tlačidlo X, indikujúce zatvorenie okna
     onModalSavedModelClose(null);
   };
 
-  const handleCloseSelected = (index) => {
+  const handleCloseSelected = (index) => { // udalosť po kliku na tlačidlo modelu a následné odoslanie jeho typu
     const selectedModelName = names[index];
     onModalSavedModelClose(selectedModelName);
   };
@@ -31,8 +31,10 @@ export default function ModalSavedModels({ visibility, onModalSavedModelClose, m
       <div style={{ backgroundColor: '#427D9D', margin: '15% auto', padding: '20px', border: '2px solid #fff', width: '30%', minWidth: '300px' }}>
         <div className="layerOptionsRow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Saved models</h2>
+          {/* Tlačidlo X pre zatvorenie okna */}
           <span className="close" onClick={handleClosePressed} style={{ cursor: 'pointer' }}> &times; </span>
         </div>
+        {/* Pridávanie tlačidiel s názvom vrstiev a úprava ich štýlu */}
         {names.map((name, index) => (
           <button
             key={index}

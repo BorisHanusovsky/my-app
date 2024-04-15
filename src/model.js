@@ -5,7 +5,7 @@ import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup, signO
 import { getStorage,ref,getDownloadURL,uploadBytes } from "firebase/storage";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
-const tf = require('@tensorflow/tfjs');
+const tf = require('@tensorflow/tfjs'); // kniznica pre pracu s tensorflow.js
 
 
 let model;
@@ -22,35 +22,7 @@ const app = firebase.initializeApp({
   const auth = getAuth(app)
   setPersistence(auth,browserLocalPersistence)
 
-
-// // onAuthStateChanged(auth, user =>{
-// //   console.log(`You are logged in as:${user.displayName}`)
-// // })
-
-// export async function LogIn(account){
-//   if (account?.displayName !== undefined){
-
-//     try {
-//       const auth = getAuth(app)
-//       let usr = await signInWithPopup(auth, new GoogleAuthProvider());
-//       return usr.user;
-//     } catch (error) {
-//       console.error("Login failed:", error);
-//       throw error; // Rethrow or handle error as needed
-//     }
-//   }
-//   else{
-//     alert(account.displayName)
-    
-//       firebase.auth().signOut().then(() => {
-//         alert("Sign aout sucessfull")
-//       }).catch((error) => {
-//         throw error
-//       });
-//   }
-// }
-
-export async function logIn() {
+export async function logIn() { // prihlasenie pouzivatela
   try {
       const userCredential = await signInWithPopup(auth, new GoogleAuthProvider());
       return userCredential.user;
@@ -60,7 +32,7 @@ export async function logIn() {
   }
 }
 
-export async function logOut() {
+export async function logOut() { // odhlasenie pouzivatela
   try {
       await signOut(auth);
       console.log("Logout successful");
@@ -70,7 +42,7 @@ export async function logOut() {
   }
 }
 
-  export async function getModelNames(accountName) {
+  export async function getModelNames(accountName) { // ziskanie vsetkych nazvov modelov v priecinku pouzivatela
     try {
       const result = await firebase.storage().ref(accountName).listAll();
       let modelNames = [];
@@ -83,56 +55,39 @@ export async function logOut() {
       return modelNames;
     } catch (error) {
       console.error(error);
-      throw error; // Re-throw the error to propagate it to the caller
+      throw error;
     }
   }
 
-export async function downloadModel(modelName, accountName) {
+export async function downloadModel(modelName, accountName) { // stiahnutie vybraneho modelu z priecinku pozuzivatela
     const storageRef = firebase.storage().ref();
-    
-    //var modelRef = storageRef.child(`Convolucka/Convolucka.json`);
-    var modelRef = storageRef.child(`${accountName}/${modelName.current}/model.json`);
-    //var modelRef = storageRef.child(`tfjs_model/model.json`);
+    var modelRef = storageRef.child(`${accountName}/${modelName.current}/model.json`); // cesta k suborom v priecinku s menom pouzivatela/ menom modelu
     console.log(modelRef);
     try {
-      // Get the download URL
       const url = await modelRef.getDownloadURL();
       console.log(url);
-  
-      // Assuming `model` is declared in the outer scope
-      //model = await tf.loadLayersModel('https://firebasestorage.googleapis.com/v0/b/borisssfirebase.appspot.com/o/modelik%2Fmodelik.json?alt=media&token=05dad239-a402-4d49-92e9-fad049ddc440');
       model = await tf.loadLayersModel(url);
       console.log(model)
-  
-      // Insert url into an <img> tag to "download"
-      // var img = document.getElementById('myimg');
-      // img.setAttribute('src', url);
     } catch (error) {
-      // Handle errors
       switch (error.code) {
         case 'storage/object-not-found':
-          // File doesn't exist
           break;
         case 'storage/unauthorized':
-          // User doesn't have permission to access the object
           break;
         case 'storage/canceled':
-          // User canceled the upload
           break;
         case 'storage/unknown':
-          // Unknown error occurred, inspect the server response
           break;
         default:
-          // Handle other errors
       }
     }
   }
 
-export function createModel() {
+export function createModel() { // vytvorenie instancie prazdneho sekvencneho modelu
     model = tf.sequential();
 }
 
-export function compileModel(){
+export function compileModel(){ // kompilacia modelu
     console.log(model);
     try{
       model.compile({ optimizer: 'adam',loss: 'categoricalCrossentropy', metrics: ['accuracy']});
@@ -144,8 +99,7 @@ export function compileModel(){
     }
 }
 
-async function uploadModelArtifacts(modelName, accountName, jsonFile, binFile) {
-    // Upload JSON and binary files to Firebase Storage
+async function uploadModelArtifacts(modelName, accountName, jsonFile, binFile) { // odoslanie JSON a binarneho suboru na Firebase ulozisko
     const blob1 = new Blob([jsonFile], { type: 'application/json' });
     const blob2 = new Blob([binFile], { type: 'application/octet-stream' });
 
@@ -162,7 +116,7 @@ async function uploadModelArtifacts(modelName, accountName, jsonFile, binFile) {
     })
 }
 
-export async function saveModel(modelName, accountName) {
+export async function saveModel(modelName, accountName) { // ulozenie vytvoreneho modelu
   try{
       let jsonFile, binFile;
       const customSaveHandler = async (modelArtifacts) => {
@@ -181,46 +135,18 @@ export async function saveModel(modelName, accountName) {
   }
 }
 
-export async function preprocessData(rawData) {
-  // Example preprocessing: normalize image data to [0, 1]
+export async function preprocessData(rawData) { // nepouzite
   return tf.div(tf.tensor4d(rawData), 255);
 }
 
-// export async function predictModel(model, data) {
-//   const processedData = await preprocessData(data.images);
-//   const predictions = model.predict(processedData);
-//   // Optionally, process predictions here (e.g., decode the output)
-//   return predictions;
-// }
-
-// export function getModelActivations(model, layerNames) {
-//   // Create a new model that outputs activations from intermediate layers
-//   const outputs = layerNames.map(name => model.getLayer(name).output);
-//   const activationModel = tf.model({inputs: model.input, outputs});
-//   return activationModel;
-// }
-
-// export async function generateActivationMaps(modelName, data) {
-//   await downloadModel(modelName);
-//   // Assuming 'model' is now the loaded model
-  
-
-//   const processedData = await preprocessData(data.images[0]); // Process a single image
-//   const activations = activationModel.predict(processedData);
-
-//   // 'activations' now contains the activation maps from the specified layers
-//   // You can process or visualize these as needed
-//   return activations;
-// }
-
-export async function testModel(modelName, data,accountName){
+export async function testModel(modelName, data,accountName){ // nepouzite
   await downloadModel(modelName,accountName);
   model.predict(tf.tensor4d(data.images[0]), data.labels[0] );
 }
 
-export async function trainAndFetchActivations(modelName, dataset,accountName,settings) {
+export async function trainAndFetchActivations(modelName, dataset,accountName,settings) { // trenovnie modelu a prijatie aktivacii
   try {
-    if (!modelName) { // Assuming you meant to check modelName here
+    if (!modelName) { 
       alert("Save the model first");
       return;
     }
@@ -233,30 +159,28 @@ export async function trainAndFetchActivations(modelName, dataset,accountName,se
       return;
     }
     trainingCompleted = false
-    const training = await trainModel(modelName,dataset,accountName,settings);
+    const training = await trainModel(modelName,dataset,accountName,settings); // trenovanie
     if (training){
-      // Make sure this function handles errors/exceptions appropriately
-      await waitForTrainingToComplete(); // Ensure this waits or polls until training is actually complete
-      const activations = await fetchActivations(); // This should correctly fetch or return null/undefined on failure
-      return activations; // This could be null/undefined if fetching failed
+      await waitForTrainingToComplete(); // dopytovanie sa na stav trenovanie
+      const activations = await fetchActivations(); // ziskanie aktivacii
+      return activations;
     }
    
   } catch (error) {
     console.error("An error occurred during training or fetching weights:", error);
-    // Handle the error, possibly by alerting the user or updating the state
-    return null; // Ensure the caller knows an error occurred
+    return null;
   }
 }
-const ip = '34.32.162.39'
-//const ip = process.env.IP
+const ip = '34.141.150.2' // ip adresa servera(stale sa meni)
 
-export async function trainModel(modelName,dataset,accountName,settings) {
+export async function trainModel(modelName,dataset,accountName,settings) { // trenovanie modelu
   try {
     await fetch(`http://${ip}:5000/train`, {
       method: 'POST',
       headers: {
         "Content-Type": "application/json",
       },
+      // telo POST poziadavky s nazvom modelu, typom datasetu, meno pouzivatela, optimizer, uciaci parameter, pocet epoch
       body: JSON.stringify({'dir': modelName, 'dataset' : dataset, 'account' : accountName, 'optimizer' : settings.optimizer, 'learningRate' : settings.learningRate, 'epochs' : settings.epochs})
     });
     return true;
@@ -267,19 +191,17 @@ export async function trainModel(modelName,dataset,accountName,settings) {
   }
 }
 
-async function waitForTrainingToComplete() {
+async function waitForTrainingToComplete() { // vysielanie dopytov na trenovaci server o stave trenovania
   while (!trainingCompleted) {
     await checkTrainingStatus();
     if (!trainingCompleted) {
-      // Wait for some time before checking again
-      await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds
+      await new Promise(resolve => setTimeout(resolve, 5000)); // kazdych 5 sekund
     }
   }
   console.log("Training has completed2.");
-  // Proceed to fetch weights or handle completion
 }
 
-async function checkTrainingStatus() {
+async function checkTrainingStatus() { // dopyt na stav trenovania
   try {
     const response = await fetch(`http://${ip}:5000/status`);
     const statusData = await response.json();
@@ -299,7 +221,7 @@ async function checkTrainingStatus() {
   }
 }
 
-async function fetchActivations() {
+async function fetchActivations() { // ziskanie aktivacii, vstupnych dat, oznaceni a metrik pre grafy
   return new Promise((resolve, reject) => {
     fetch(`http://${ip}:5000/activations`)
       .then(response => response.json())
@@ -322,34 +244,32 @@ async function fetchActivations() {
   });
 }
 
-export async function importModel(modelName, accountName) {
+export async function importModel(modelName, accountName) { // import modelu
     try {
       await downloadModel(modelName,accountName);
       return model_to_layers();
     } catch (error) {
       console.error("Error importing model:", error);
-      throw error; // Propagate the error to the caller
+      throw error;
     }
   }
 
-export async function exportModel(modelName, accountName){
+export async function exportModel(modelName, accountName){ // exporrt modelu
   if(!accountName){
     alert("You need to be logged in");
     return;
   }
-  if (!modelName) { // Assuming you meant to check modelName here
+  if (!modelName) { 
     alert("Save the model first");
     return;
   }
-  //fetch(`http://${ip}:5000/keras`)
-  // .then(response => response.json())
   if(model){
     await downloadModel(modelName,accountName);
     model.save('downloads://my-model')
   }
 }
 
-export function add_model_layer(layer) {
+export function add_model_layer(layer) { // pridanie vrstvy, so vsetkymi jej hyperparametrami, do modelu podla jej typu
     if (typeof tf === 'undefined') {
         console.error('TensorFlow.js is not loaded. Please make sure it is loaded before calling add_model_layer.');
         return;
@@ -382,7 +302,7 @@ export function add_model_layer(layer) {
     }
     
 
-function model_to_layers() {
+function model_to_layers() { // extrakcia informacii z tensorlow.js vrstvy do vrstvy pre aplikaciu
     if (typeof tf === 'undefined') {
         console.error('TensorFlow.js is not loaded. Please make sure it is loaded before calling add_model_layer.');
         return;
@@ -392,7 +312,6 @@ function model_to_layers() {
     let batch = model.layers[0].batchInputShape[0]
     model.layers.forEach(layer => {
         let shape = i === 0 ? layer.batchInputShape : undefined
-        alert(shape)
         switch(layer.constructor.className){
             case LayerType.DENSE:
                 layers.push({ index : i, type : 'Dense', numOfNeurons : layer.units, activationType : layer.activation.constructor.className, batchSize : batch, inputShape : shape});

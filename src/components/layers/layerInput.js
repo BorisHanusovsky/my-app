@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-
-export default function LayerInput({layer, handleLayerClick, handleLayerDoubleClick, isActive}) {
+export default function LayerInput({layer, handleLayerClick, handleLayerDoubleClick, isActive}) { // komponent reprezentujúci plne prepojenú vrstvu v Model panel(NEPOUŽÍVA SA)
    
 const handleClick = () => {
   handleLayerClick(layer.index);

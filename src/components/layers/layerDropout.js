@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-
-export default function LayerDropout({layer, handleLayerClick, handleLayerDoubleClick, isActive}) {
+export default function LayerDropout({layer, handleLayerClick, handleLayerDoubleClick, isActive}) {  // komponent reprezentujúci vypadávaciu vrstvu v Model panel
    
 const handleClick = () => {
   handleLayerClick(layer.index);

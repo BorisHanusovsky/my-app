@@ -1,62 +1,49 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ClimbingBoxLoader } from 'react-spinners';
 
-export default function DisplayPanel({activations, imgs, load,epochNum, onEpochNumChange}) {
+export default function DisplayPanel({activations, imgs, load,epochNum, onEpochNumChange}) { // komponent zobrazenia aktivačných máp 
   const canvasRef = useRef();
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  //const [images, setImages] = useState(imgs)
-  const [displayImages, setDisplayImages] = useState(false);
-  const [epoch, setEpoch] = useState(epochNum)
-  //let images = activations?.[selectedImageIndex]
-  let images = displayImages ? [imgs?.[selectedImageIndex]] : activations?.[selectedImageIndex];
-  
-  
-  // function handleOnChangeImageClick(){
-  //   if(selectedImageIndex == 9)
-  //     setSelectedImageIndex(0)
-  //   else
-  //   setSelectedImageIndex(selectedImageIndex +1)
-  // }
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0) // index obrázka, z ktorého boli mapy vytvorené
+  const [displayImages, setDisplayImages] = useState(false); // premenn8 rozhodujúca či sa majú zobraziť vstupy do siete alebo aktivácie, prednastvená hodnota zobrauje aktivácie
+  const [epoch, setEpoch] = useState(epochNum) // číslo epochy
+  let images = displayImages ? [imgs?.[selectedImageIndex]] : activations?.[selectedImageIndex]; // premenná uchovávajúca pole aktuálne zobrazených obrázkov
 
-  // function handleOnShowInputClick(){
-  //   images = imgs
-  // }
-
-    function handleOnChangeImageClick() {
-    setDisplayImages(false); // Ensure we're displaying activations upon changing image
+  function handleOnChangeImageClick() { // udalosť po kliknutí na tlačidlo pre zmenu vstupu do siete
+    setDisplayImages(false);
     setSelectedImageIndex((prevIndex) => (prevIndex === 9 ? 0 : prevIndex + 1));
   }
 
-  function handleEpochChange(event){
+  function handleEpochChange(event){ // udalosť po zmene hodnoty posuvníka pre výber epochy
     setEpoch(event.target.value)
     onEpochNumChange(event.target.value -1)
   }
 
-  function handleOnShowInputClick() {
-    setDisplayImages(true); // Switch to displaying imgs
+  function handleOnShowInputClick() { // udalosť po kliknutí na tlačidlo pre zobrazenie vstupu do siete
+    setDisplayImages(true); 
     console.log(imgs)
   }
 
-  useEffect(() => {setDisplayImages(false);},[activations])
+  useEffect(() => {setDisplayImages(false);},[activations]) // zmena zobrazenia po zmene aktivácií
 
-  useEffect(() => {
+  useEffect(() => {  // logika zobrazenia poľa obrázkov na plátne
     const canvas = canvasRef.current;
     if (canvas && activations && images) {
       const ctx = canvas.getContext('2d');
-      const scaleFactor = 4; // Adjust as needed for visibility
+      const scaleFactor = 4; 
       let numRows, numCols, size, paddedSize, gap;
   
       const firstElement = images[0];
       
-      // Determine the structure of the data (1D or 2D) and set variables accordingly
-      if (Array.isArray(firstElement)) {
+      // Rozhodnutie či sa jedná o 1D alebo 2D pole
+      // 2D
+      if (Array.isArray(firstElement)) { 
           numRows = Math.floor(Math.sqrt(images.length));
           numCols = Math.ceil(images.length / numRows);
           size = firstElement.length;
           gap = 5;
           paddedSize = size * scaleFactor;
-
       } 
+      // 1D
       else{
         numRows = 30
           numCols = images.length
@@ -65,11 +52,13 @@ export default function DisplayPanel({activations, imgs, load,epochNum, onEpochN
           paddedSize = 20
       }
       
+      // širka a výška plátna
       canvas.width = numCols * (paddedSize + gap) - gap;
       canvas.height = numRows * (paddedSize + gap) - gap;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       let row,col,xOffset, yOffset
       
+      // vykreslenie farebn-eho obrazu
       if (Array.isArray(images[0]) && Array.isArray(images[0][0])  && Array.isArray(images[0][0][0])){
         console.log(images)
             // Render 2D activation as image
@@ -100,6 +89,7 @@ export default function DisplayPanel({activations, imgs, load,epochNum, onEpochN
           }
      
       }
+      // vykreslenie šedotónového obrazu
       if (Array.isArray(images[0])){
         images.forEach((image, index) => {
             // Render 2D activation as image
@@ -122,26 +112,27 @@ export default function DisplayPanel({activations, imgs, load,epochNum, onEpochN
             }
         }) 
       }
+      // vykreslenie 1D obrazu
       else {
           draw1D(images, 20, ctx);
       }}}, 
         [images, selectedImageIndex, displayImages]);
+        // implementácia vykreslenia 1D obrazu
         function draw1D(arr, width, ctx) {
-        console.log(arr)
-        //const width = canvasSize / arr.length > 50 ? 50 : canvasSize / arr.length
-        let currPos = 0;
-        const min = Math.min(arr)
-        const max = Math.max(arr)
-        for (let i = 0; i < arr.length; i++) {
-          
-          let intensity = (arr[i] - min)/(max - min);
-              intensity = arr[i] *255; // Example to map to 0-255 scale
-            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-            ctx.fillRect(currPos, 0, width, width);
-            drawSquare(intensity, currPos, width, ctx);
-            currPos += width;
+            let currPos = 0;
+            const min = Math.min(arr)
+            const max = Math.max(arr)
+            for (let i = 0; i < arr.length; i++) {
+              
+              let intensity = (arr[i] - min)/(max - min);
+                  intensity = arr[i] *255; // Example to map to 0-255 scale
+                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+                ctx.fillRect(currPos, 0, width, width);
+                drawSquare(intensity, currPos, width, ctx);
+                currPos += width;
+            }
         }
-        }
+        // implementácia vykreslenia štvorca
         function drawSquare(intensity, currPos, width, ctx) {
           ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
           ctx.fillRect(currPos, 0, width, width);
@@ -157,12 +148,9 @@ export default function DisplayPanel({activations, imgs, load,epochNum, onEpochN
       </div>
       <div style={{display : 'flex', alignItems : 'center', justifyContent: 'center'}}>
       <canvas ref={canvasRef}  width={1000} style={{ display: load ? 'none' : 'block' }}></canvas>
+      {/* Animácia počas trénovania */}
       <ClimbingBoxLoader loading={load} size={30} color="#DDF2FD"/>
       </div>
     </div>
-
-
   );
-
-  
 }

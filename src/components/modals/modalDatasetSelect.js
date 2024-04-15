@@ -1,27 +1,27 @@
 import React, { useState } from 'react';
 
-export default function ModalDatasetSelect({ visibility, onDatasetClose }) {
-    const names = ['MNIST', 'CIFAR10', 'Fashion MNIST'];
-    const [hoveredButtons, setHoveredButtons] = useState(Array(names.length).fill(false));
-  const vis = visibility;
+export default function ModalDatasetSelect({ visibility, onDatasetClose }) { // komponent modálneho okna výberu datasetu
+  const names = ['MNIST', 'CIFAR10', 'Fashion MNIST']; // ponúkané typy datasetov
+  const [hoveredButtons, setHoveredButtons] = useState(Array(names.length).fill(false));
+  const vis = visibility; // viditeľnosť modálneho okna
 
-  const handleMouseEnter = (index) => {
+  const handleMouseEnter = (index) => { // udalosť prechodu kuzroru po tlačidle datasetu, dochádza k jeho zvýrazneniu
     const updatedHoveredButtons = [...hoveredButtons];
     updatedHoveredButtons[index] = true;
     setHoveredButtons(updatedHoveredButtons);
   };
 
-  const handleMouseLeave = (index) => {
+  const handleMouseLeave = (index) => { // udalosť odchodu kuzroru z tlačidla datasetu, dochádza k odstráneniu zvýraznenia
     const updatedHoveredButtons = [...hoveredButtons];
     updatedHoveredButtons[index] = false;
     setHoveredButtons(updatedHoveredButtons);
   };
 
-  const handleClosePressed = () => {
+  const handleClosePressed = () => { // udalosť po kliku na tlačidlo X, indikujúce zatvorenie okna
     onDatasetClose(null);
   };
 
-  const handleCloseSelected = (index) => {
+  const handleCloseSelected = (index) => {  // udalosť po kliku na tlačidlo datasetu a následné odoslanie jeho typu
     const selectedModelName = names[index];
     onDatasetClose(selectedModelName);
   };
@@ -31,8 +31,10 @@ export default function ModalDatasetSelect({ visibility, onDatasetClose }) {
       <div style={{ backgroundColor: '#427D9D', margin: '15% auto', padding: '20px', border: '2px solid #fff', width: '30%', minWidth: '300px' }}>
         <div className="layerOptionsRow" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2>Saved models</h2>
+          {/* Tlačidlo X pre zatvorenie okna */}
           <span className="close" onClick={handleClosePressed} style={{ cursor: 'pointer' }}> &times; </span>
         </div>
+        {/* Pridávanie tlačidiel s názvom datasetov a úprava ich štýlu */}
         {names.map((name, index) => (
           <button
             key={index}

@@ -275,7 +275,6 @@ export function add_model_layer(layer) { // pridanie vrstvy, so vsetkymi jej hyp
         return;
     }
     let nlayer;
-    alert(layer.inputShape)
       switch (layer.type) {
         case LayerType.DENSE:
             nlayer = tf.layers.dense({ units: layer.numOfNeurons, activation: layer.activationType, batchInputShape: layer.inputShape});

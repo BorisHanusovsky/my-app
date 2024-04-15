@@ -27,13 +27,16 @@ export default class LayerOptionsDense extends React.Component{ // komponent nas
         inputShape: this.props.inputShape
       })
     }
-    if(this.props.batchSize !== this.state.inputShape[0]){
-      const updatedInputShape = [...this.state.inputShape];
-      updatedInputShape[0] = this.props.batchSize; // úprava tvaru vstupu do siete podľa veľkosti vstupnej dávky
-      this.setState({
-        inputShape: updatedInputShape
-      })
+    if(this.state.inputShape){
+      if(this.props.batchSize !== this.state.inputShape[0]){
+        const updatedInputShape = [...this.state.inputShape];
+        updatedInputShape[0] = this.props.batchSize; // úprava tvaru vstupu do siete podľa veľkosti vstupnej dávky
+        this.setState({
+          inputShape: updatedInputShape
+        })
+      }
     }
+   
   }
 
   handleClose = () => { // po stlačení tlačidla X nebudú uložené aktuálne nastavenia do modelu

@@ -19,23 +19,21 @@ export default class LayerOptionsAvgPool2D extends React.Component{ // komponent
 
 
   componentDidUpdate(prevProps) { // zmena stavu komponentu v prípade zmien vstupných argumentov
-    if (prevProps.numOfKernels !== this.props.numOfKernels) {
-      this.setState({
-        numOfKernels: this.props.numOfKernels || 1,
-      })
-    }
     if (prevProps.inputShape !== this.props.inputShape) {
       this.setState({
         inputShape: this.props.inputShape
       })
     }
-    if(this.props.batchSize !== this.state.inputShape[0]){
-      const updatedInputShape = [...this.state.inputShape];
-      updatedInputShape[0] = this.props.batchSize; // úprava tvaru vstupu do siete podľa veľkosti vstupnej dávky
-      this.setState({
-        inputShape: updatedInputShape
-      })
+    if(this.state.inputShape){
+      if(this.props.batchSize !== this.state.inputShape[0]){
+        const updatedInputShape = [...this.state.inputShape];
+        updatedInputShape[0] = this.props.batchSize; // úprava tvaru vstupu do siete podľa veľkosti vstupnej dávky
+        this.setState({
+          inputShape: updatedInputShape
+        })
+      }
     }
+    
   }
 
   handleClose = () => { // po stlačení tlačidla X nebudú uložené aktuálne nastavenia do modelu
